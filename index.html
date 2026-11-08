@@ -94,8 +94,8 @@ button{cursor:pointer}
 .gauge .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;line-height:1}
 .gauge .v small{font-size:14px;color:var(--muted);font-weight:400}
 .bar{height:7px;border-radius:7px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--go);border-radius:7px;transition:width .4s}
-.gauge.cp .bar i{background:var(--mustard)}
+.bar i{display:block;height:100%;background:var(--amber);border-radius:7px;transition:width .4s,background .2s}
+.bar i.done{background:var(--go)}
 .gauge .sub{font-size:12.5px;color:var(--muted)}
 
 /* filter bar */
@@ -449,7 +449,7 @@ function render(){
   drawWorld();
 
   const cos=m.items.filter(i=>i.type!=='tape'),tp=m.items.filter(i=>i.type==='tape'),r=reachedOf(m),last=m.cps[m.cps.length-1].n;
-  const gauge=(label,got,tot,sub,cls='')=>el('div',{class:'gauge '+cls},el('span',{class:'label'},label),el('div',{class:'v'},S.tokens&&got!=null?String(got):'–',el('small',{},' / '+tot)),el('div',{class:'bar'},Object.assign(el('i'),{style:'width:'+(S.tokens&&got!=null&&tot?Math.round(got/tot*100):0)+'%'})),el('span',{class:'sub'},sub));
+  const gauge=(label,got,tot,sub,cls='')=>el('div',{class:'gauge '+cls},el('span',{class:'label'},label),el('div',{class:'v'},S.tokens&&got!=null?String(got):'–',el('small',{},' / '+tot)),el('div',{class:'bar'},Object.assign(el('i',{class:S.tokens&&got!=null&&tot&&got>=tot?'done':''}),{style:'width:'+(S.tokens&&got!=null&&tot?Math.round(got/tot*100):0)+'%'})),el('span',{class:'sub'},sub));
   const cf=cos.filter(has).length,tf=tp.filter(has).length;
   $('#gauges').replaceChildren(
     gauge('Cosmetics',cf,cos.length,S.tokens?(cos.length-cf)+' still to find':'Load a save to count'),
