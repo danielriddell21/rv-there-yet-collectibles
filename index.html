@@ -268,10 +268,10 @@ const TAPES = {
 for (let i=1;i<=14;i++) TAPES['Archibald_Episode'+String(i).padStart(2,'0')]=['Archibald, Episode '+i,'Archibald'];
 
 const MAPS=[
-  {id:'mabutts',name:'Mabutts Valley',tag:/mabutt/i,deco:'mesa'},
-  {id:'snow',name:'Snow',tag:/snow/i,deco:'pine'},
-  {id:'jungle',name:'Jungle',tag:/jungle/i,deco:'palm'},
-  {id:'golf',name:'Golf Course',tag:/golf/i,deco:'flag'}
+  {id:'mabutts',name:'Mabutts Valley',short:'Mabutts',tag:/mabutt/i,deco:'mesa'},
+  {id:'snow',name:'Mt. Yurbuttsk',short:'Yurbuttsk',tag:/snow/i,deco:'pine'},
+  {id:'jungle',name:'St. Búttin Bay',short:'Búttin Bay',tag:/jungle/i,deco:'palm'},
+  {id:'golf',name:'Golf Heaven',short:'Golf',tag:/golf/i,deco:'flag'}
 ];
 const tapeHome={};
 for (const m of MAPS){
@@ -456,7 +456,7 @@ function render(){
   const LIVERY={mabutts:'var(--rust)',snow:'var(--mustard)',jungle:'var(--teal)',golf:'var(--ink)'};
   $('#stripe').replaceChildren(...MAPS.map(x=>{
     const tot=x.items.length, got=x.items.filter(has).length, pct=S.tokens?Math.round(got/tot*100):100;
-    const short=x.name.replace(' Valley','').replace(' Course','');
+    const short=x.short;
     return el('button',{class:'leg',type:'button',style:'flex:'+Math.max(tot,4)+' 1 0','aria-current':String(S.map===x.id),
       'aria-label':x.name+': '+(S.tokens?got+' of '+tot+' found':tot+' collectibles'),title:x.name+(S.tokens?' · '+got+' of '+tot+' found':''),
       onclick:()=>{S.map=x.id;S.sel=null;savePrefs();render();}},
