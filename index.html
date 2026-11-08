@@ -436,7 +436,6 @@ function drawWorld(){
   if (d){
     g.push(sv('path',{d,fill:'none',stroke:'var(--road)','stroke-width':20,'stroke-linecap':'round','stroke-linejoin':'round'}));
     g.push(sv('path',{d,fill:'none',stroke:'var(--roadline)','stroke-width':2.5,'stroke-dasharray':'10 12','stroke-linecap':'round'}));
-    if (r!=null&&r>0){ const k=P.findIndex(p=>p.n===r); if(k>0) g.push(sv('path',{d:curve(P.slice(0,k+1)),fill:'none',stroke:'var(--trail)','stroke-width':5,'stroke-linecap':'round','stroke-dasharray':'2 9'})); }
     /* stretches of road between stops: clickable, with a dot per item found along them */
     pieces(P).forEach((pc,i)=>{
       const a=P[i].n, k=2*a+1, st=cpState(m,k), sel=S.sel===k;
