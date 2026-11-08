@@ -574,7 +574,7 @@ function showMap(){
 }
 function step(d){const m=cur();const ns=[...new Set(m.items.flatMap(i=>i.ks))].sort((a,b)=>a-b);let i=S.sel==null?(d>0?-1:ns.length):ns.indexOf(S.sel);if(i<0&&S.sel!=null){let j=ns.findIndex(k=>k>S.sel);if(j<0)j=ns.length;i=d>0?j-1:j;}i+=d;S.sel=(i<0||i>=ns.length)?null:ns[i];render();}
 $('#allBtn').onclick=()=>{S.sel=null;render();};
-$('#lgConf').innerHTML=BADGE.conf+'Confirmed or matches a guide'; $('#lgFile').innerHTML=BADGE.file+'From game files only';
+$('#lgConf').innerHTML=BADGE.conf+'Confirmed'; $('#lgFile').innerHTML=BADGE.file+'From game files only';
 $('#prev').onclick=()=>step(-1); $('#next').onclick=()=>step(1);
 
 /* ---------- item modal ---------- */
