@@ -55,7 +55,14 @@ button{cursor:pointer}
 .brand h1{font-family:var(--display);font-size:clamp(28px,4vw,44px);line-height:1}
 .brand h1 .q{color:var(--rust)}
 .brand p{margin:8px 0 0;color:var(--muted);max-width:62ch}
-.stripe{height:10px;border-radius:2px;background:linear-gradient(90deg,var(--rust) 0 33%,var(--mustard) 33% 66%,var(--teal) 66%)}
+.stripe{display:flex;gap:3px}
+.leg{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:44px}
+.leg .track{height:10px;border-radius:2px;background:var(--line);overflow:hidden;position:relative}
+.leg .track i{position:absolute;inset:0 auto 0 0;border-radius:2px;transition:width .5s}
+.leg .lab{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leg[aria-current="true"] .lab{color:var(--ink);font-weight:700}
+.leg:hover .lab{color:var(--ink)}
+.leg:focus-visible .track{outline:3px solid var(--mustard);outline-offset:2px}
 .drop{border:2px dashed var(--line);border-radius:14px;background:var(--panel);padding:14px 16px;display:flex;gap:14px;align-items:center;transition:border-color .15s,background .15s;cursor:pointer}
 .drop.over{border-color:var(--teal);background:var(--teal-soft)}
 .tape{flex:none;width:64px;height:42px;border-radius:6px;background:var(--ink);position:relative}
@@ -176,7 +183,7 @@ button{cursor:pointer}
       <input id="file" type="file" accept=".sav,.json" hidden>
     </label>
   </div>
-  <div class="stripe" aria-hidden="true"></div>
+  <nav class="stripe" id="stripe" aria-label="Progress across all maps"></nav>
 
   <nav class="maps" id="maps" role="tablist" aria-label="Maps"></nav>
 
@@ -445,6 +452,17 @@ function render(){
   if (S.tokens){const all=MAPS.flatMap(x=>x.items);const ids=[...new Set(all.map(i=>i.id))];const n=ids.filter(id=>S.tokens.has(id)).length;st.className='status ok';st.textContent=(S.file||'Save')+' loaded: '+n+' of '+ids.length+' collectibles found.';}
 
   $('#maps').replaceChildren(...MAPS.map(x=>{const f=x.items.filter(has).length;return el('button',{class:'sign',role:'tab','aria-selected':String(S.map===x.id),type:'button',onclick:()=>{S.map=x.id;S.sel=null;savePrefs();render();}},el('span',{class:'n'},x.name),el('span',{class:'pct'},S.tokens?f+' / '+x.items.length+' found':x.items.length+' collectibles'));}));
+
+  const LIVERY={mabutts:'var(--rust)',snow:'var(--mustard)',jungle:'var(--teal)',golf:'var(--ink)'};
+  $('#stripe').replaceChildren(...MAPS.map(x=>{
+    const tot=x.items.length, got=x.items.filter(has).length, pct=S.tokens?Math.round(got/tot*100):100;
+    const short=x.name.replace(' Valley','').replace(' Course','');
+    return el('button',{class:'leg',type:'button',style:'flex:'+Math.max(tot,4)+' 1 0','aria-current':String(S.map===x.id),
+      'aria-label':x.name+': '+(S.tokens?got+' of '+tot+' found':tot+' collectibles'),title:x.name+(S.tokens?' · '+got+' of '+tot+' found':''),
+      onclick:()=>{S.map=x.id;S.sel=null;savePrefs();render();}},
+      el('span',{class:'track'},el('i',{style:'width:'+pct+'%;background:'+LIVERY[x.id]})),
+      el('span',{class:'lab'},S.tokens?short+' '+got+'/'+tot:short));
+  }));
 
   drawWorld();
 
