@@ -1,0 +1,467 @@
+<title>RV There Yet? Collectibles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: a camper-van dashboard. Gauge strip up top, road-sign map tabs, then a grid of item "cassette" cards; a side drawer holds the location notes. */
+:root{
+  --bg:#e7eee9; --panel:#f8faf6; --ink:#1d2827; --muted:#5a6b68; --line:#c9d6cf;
+  --rust:#d4572a; --mustard:#e2a92f; --teal:#2a7a73; --teal-soft:#d3e8e3; --rust-soft:#f6dccf;
+  --found:#2a7a73; --missing:#d4572a;
+  --display:"Bungee", "Arial Black", Impact, sans-serif;
+  --body:"Karla", "Segoe UI", system-ui, sans-serif;
+  --mono:"Space Mono", ui-monospace, Consolas, monospace;
+  --shadow:0 1px 0 rgba(29,40,39,.08), 0 6px 18px -10px rgba(29,40,39,.35);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121b1a; --panel:#1a2524; --ink:#e8efe9; --muted:#9db0ab; --line:#2c3b39;
+  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532; --rust-soft:#3a2219;
+  --found:#5cc0b5; --missing:#ef7a4c; --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121b1a; --panel:#1a2524; --ink:#e8efe9; --muted:#9db0ab; --line:#2c3b39;
+  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532; --rust-soft:#3a2219;
+  --found:#5cc0b5; --missing:#ef7a4c; --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--mustard);outline-offset:2px}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+header{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
+.brand h1{font-family:var(--display);font-size:clamp(28px,5vw,44px);line-height:1;letter-spacing:.01em}
+.brand h1 .q{color:var(--rust)}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:60ch}
+.stripe{height:10px;border-radius:2px;background:linear-gradient(90deg,var(--rust) 0 33%,var(--mustard) 33% 66%,var(--teal) 66%)}
+
+/* loader */
+.loader{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.drop{border:2px dashed var(--line);border-radius:14px;background:var(--panel);padding:22px;display:flex;gap:18px;align-items:center;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--teal);background:var(--teal-soft)}
+.drop .tape{flex:none;width:86px;height:56px;border-radius:7px;background:var(--ink);position:relative}
+.drop .tape::before{content:"";position:absolute;inset:8px 8px 20px;border-radius:3px;background:var(--mustard)}
+.drop .tape::after{content:"";position:absolute;left:20px;right:20px;bottom:7px;height:10px;border-radius:8px;background:radial-gradient(circle at 6px 50%,var(--panel) 3px,transparent 4px),radial-gradient(circle at calc(100% - 6px) 50%,var(--panel) 3px,transparent 4px),var(--muted)}
+.drop h2{font-size:18px;font-weight:700}
+.drop p{margin:2px 0 10px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 16px;font-weight:700;background:var(--rust);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+.where{border-radius:14px;background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.where code{font-family:var(--mono);font-size:12px;background:var(--bg);border-radius:6px;padding:8px 10px;display:block;overflow-x:auto;white-space:nowrap}
+.where .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted)}
+.status.err{color:var(--missing)}
+.status.ok{color:var(--found)}
+
+/* map tabs */
+.maps{display:flex;gap:10px;flex-wrap:wrap}
+.sign{border:2px solid var(--ink);background:var(--panel);border-radius:8px;padding:8px 14px 7px;display:flex;flex-direction:column;align-items:flex-start;min-width:150px;box-shadow:var(--shadow)}
+.sign .n{font-family:var(--display);font-size:15px;line-height:1.1}
+.sign .pct{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.sign[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.sign[aria-selected="true"] .pct{color:#fff;opacity:.85}
+
+/* gauges */
+.gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gauge{background:var(--panel);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.gauge .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;line-height:1}
+.gauge .v small{font-size:15px;color:var(--muted);font-weight:400}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--teal);border-radius:8px;transition:width .4s}
+.gauge.cp .bar i{background:var(--mustard)}
+.gauge .sub{font-size:13px;color:var(--muted)}
+
+/* filters */
+.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* items */
+.section-h{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+.section-h h3{font-family:var(--display);font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.item{text-align:left;border:0;background:var(--panel);border-radius:10px;padding:12px 14px 12px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;position:relative;box-shadow:var(--shadow);overflow:hidden}
+.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--line)}
+.item.is-found::before{background:var(--found)}
+.item.is-missing::before{background:var(--missing)}
+.item:hover{transform:translateY(-1px)}
+.ico{grid-row:span 2;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:var(--bg)}
+.ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.item .nm{font-weight:700;line-height:1.25;min-width:0}
+.item .meta{font-size:12.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;min-width:0}
+.pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:1px 6px}
+.pill.found{background:var(--teal-soft);color:var(--found)}
+.pill.missing{background:var(--rust-soft);color:var(--missing)}
+.pill.unknown{background:var(--bg);color:var(--muted)}
+.empty{color:var(--muted);padding:18px;background:var(--panel);border-radius:10px}
+.foot{font-size:13px;color:var(--muted);max-width:75ch}
+.foot code{font-family:var(--mono);font-size:12px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,16,15,.45);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--panel);z-index:21;display:flex;flex-direction:column;box-shadow:-10px 0 40px -20px rgba(0,0,0,.6);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer .hd{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.drawer .hd h2{font-family:var(--display);font-size:20px;line-height:1.15}
+.drawer .hd .x{margin-left:auto;border:0;background:var(--bg);border-radius:8px;width:34px;height:34px;font-size:18px;flex:none}
+.drawer .bd{padding:16px 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+.asset{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{color:var(--ink);text-decoration:none;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:500;font-size:14px}
+.links a:hover{border-color:var(--rust)}
+.note{background:var(--bg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.note img{border-radius:6px;display:block;max-height:280px;object-fit:contain;background:var(--panel)}
+.note .by{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.note .by button{margin-left:auto;border:0;background:none;color:var(--missing);font-size:12px;padding:0}
+form.add{display:flex;flex-direction:column;gap:8px}
+form.add textarea{min-height:80px;resize:vertical;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+form.add .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+form.add input[type=file]{font-size:13px;max-width:100%}
+@media (max-width:760px){
+  .loader{grid-template-columns:1fr}
+  header{grid-template-columns:1fr}
+  .gauges{grid-template-columns:1fr}
+  .gauge{flex-direction:row;align-items:center;flex-wrap:wrap}
+  .gauge .bar{flex:1 1 120px}
+  .sign{min-width:0;flex:1 1 140px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.item:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>RV There Yet<span class="q">?</span> Collectibles</h1>
+      <p>Drop in your save file to see which hats, glasses and cassette tapes you've found on each map, what's still out there, and where other players found them.</p>
+    </div>
+  </header>
+  <div class="stripe" aria-hidden="true"></div>
+
+  <section class="loader">
+    <label class="drop" id="drop" for="file">
+      <div class="tape" aria-hidden="true"></div>
+      <div style="min-width:0">
+        <h2>Load your save</h2>
+        <p>Drag <b>PlayerProgression--1.sav</b> here, or a JSON export from a save editor. It's read in your browser and never uploaded.</p>
+        <span class="btn">Choose file</span>
+        <input id="file" type="file" accept=".sav,.json" hidden>
+        <div class="status" id="status" style="margin-top:8px" aria-live="polite">No save loaded yet. Everything below shows as unchecked.</div>
+      </div>
+    </label>
+    <div class="where">
+      <span class="label">Where your save lives (Windows)</span>
+      <code id="savepath">%LOCALAPPDATA%\Ride\Saved\SaveGames\&lt;your Steam ID&gt;\PlayerProgression--1.sav</code>
+      <div class="row">
+        <button class="btn ghost" id="copypath" type="button">Copy folder path</button>
+        <span class="status" id="copymsg"></span>
+      </div>
+      <span class="status">Paste the path into File Explorer's address bar, then open the folder named with a long number.</span>
+    </div>
+  </section>
+
+  <nav class="maps" id="maps" role="tablist" aria-label="Maps"></nav>
+
+  <section class="gauges" id="gauges"></section>
+
+  <div class="filters">
+    <div class="chips" id="typeChips" role="group" aria-label="Item type"></div>
+    <div class="chips" id="stateChips" role="group" aria-label="Status"></div>
+  </div>
+
+  <div id="items"></div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="dTitle">
+  <div class="hd">
+    <div style="min-width:0">
+      <div class="label" id="dKind"></div>
+      <h2 id="dTitle"></h2>
+      <div class="asset" id="dAsset"></div>
+    </div>
+    <button class="x" id="dClose" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="bd">
+    <div id="dState"></div>
+    <div>
+      <div class="label" style="margin-bottom:6px">Look it up</div>
+      <div class="links" id="dLinks"></div>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:6px">Location notes from players</div>
+      <div id="dNotes" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <form class="add" id="addForm">
+      <div class="label">Add where you found it</div>
+      <textarea id="noteText" placeholder="e.g. Just after checkpoint 6, on the roof of the gas station. Climb the ladder on the left."></textarea>
+      <div class="row">
+        <input id="noteImg" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      </div>
+      <div class="row">
+        <button class="btn" id="noteSave" type="submit">Save note</button>
+        <span class="status" id="noteMsg" aria-live="polite"></span>
+      </div>
+    </form>
+  </div>
+</aside>
+
+<script>
+/* ---------- catalogue (from the game's own asset list, v1.4) ---------- */
+const G = n => 'Glasses No. ' + n;
+const MAPS = [
+  { id:'mabutts', name:'Mabutts Valley', tag:/mabutt/i, checkpoints:17,
+    cos:[['SM_Hat_Beret','Beret'],['SM_Hat_Beanie','Beanie'],['SM_Hat_PomPom','Pom-Pom Hat'],['SM_Hat_Safari','Safari Hat'],['SM_Hat_PokerCap','Poker Cap'],['SM_Hat_EarMuffs','Ear Muffs'],['SM_Hat_Watermelon','Watermelon Helmet'],['SM_Hat_Propeller','Propeller Cap'],['SM_Hat_CowBoy','Cowboy Hat'],['SM_Hat_OldManCap','Old Man Cap'],['SM_Hat_MilitrayHelmet','Military Helmet'],['SM_Hat_Fur','Fur Hat'],['SM_Hat_TruckerCap','Trucker Cap'],['SM_Hat_Flaps','Flap Hat'],
+      ['SM_Glasses_01',G(1)],['SM_Glasses_02',G(2)],['SM_Glasses_03',G(3)],['SM_Glasses_04',G(4)],['SM_Glasses_05',G(5)],['SM_Glasses_06',G(6)],['SM_Glasses_07',G(7)],['SM_Glasses_08',G(8)]],
+    tapes:[['MSS_Music_Processed_Tape_AC_Lesson0',"Austin's Lesson 0",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson1',"Austin's Lesson 1",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson2',"Austin's Lesson 2",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson3',"Austin's Lesson 3",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson4',"Austin's Lesson 4",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson5',"Austin's Lesson 5",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson6',"Austin's Lesson 6",'Austin'],['MSS_Music_Processed_Tape_AC_Basement','Austin: Basement','Austin'],['MSS_Music_Processed_Tape_AC_Escape','Austin: Escape','Austin'],
+      ['MSS_Music_Processed_Tape_AudioBook_Fluffington','Fluffington','Audiobook',['MSS_Music_Tape_Story_Fluffington']],['MSS_Music_Processed_Tape_AudioBook_Emperor','The Emperor','Audiobook'],['MSS_Music_Processed_Tape_AudioBook_Werewolf','The Werewolf','Audiobook'],['MSS_Music_Tape_SelfHelp_Ep1','Self Help, Episode 1','Talk'],
+      ['MSS_Music_Processed_Tape_Music_ArcadeUniverse','Arcade Universe','Music'],['MSS_Music_Processed_Tape_Music_StarskyAndClutch','Starsky and Clutch','Music'],['MSS_Music_Processed_Tape_Music_RelaxEmbrace','Relax Embrace','Music'],['MSS_Music_Processed_Tape_Music_LasNochesLibres','Las Noches Libres','Music'],['MSS_Music_Processed_Tape_Music_HardBroBassman','Hard Bro Bassman','Music'],['MSS_Music_Processed_Tape_Music_BlowtorchParadise','Blowtorch Paradise','Music'],['MSS_Music_Processed_Tape_Music_Tiramisu','Tiramisu','Music'],['MSS_Music_Processed_Tape_Music_AngelOfSteel','Angel of Steel','Music'],['MSS_Music_Processed_Tape_Music_AlienHardStyle','Alien Hard Style','Music'],['MSS_Music_Tape_EuroTrashAnthem','Euro Trash Anthem','Music',['MSS_Music_Processed_Tape_Music_EuroTrashAnthem']]] },
+  { id:'snow', name:'Snow', tag:/snow/i, checkpoints:13,
+    cos:[['SM_Hat_Santa','Santa Hat'],['SM_Hat_Elf','Elf Hat'],['SM_Hat_Reindeer','Reindeer Antlers'],['SM_Hat_Knitted','Knitted Hat'],['SM_Hat_KnittedCap','Knitted Cap'],['SM_Hat_KnittedFlaps','Knitted Flap Hat'],['SM_Hat_KnittedPompom','Knitted Pom-Pom'],['SM_Hat_FurSnow','Snow Fur Hat'],['SM_Hat_Shawl','Shawl'],['SM_Hat_Fisher','Fisher Hat'],['SM_Hat_Captain','Captain Hat'],['SM_Hat_BandyHelmet','Bandy Helmet'],['SM_Hat_BeerHelmet','Beer Helmet'],['SM_Hat_SpaceCom','SpaceCom Hat'],['SM_Hat_Jace','Jace Hat'],['SM_Hat_Strut','Strut Hat'],['SM_Hat_HairStrand','Hair Strand'],
+      ['SM_Glasses_SkiGogglesA','Ski Goggles A'],['SM_Glasses_SkiGogglesB','Ski Goggles B'],['SM_Glasses_SnowGoggles','Snow Goggles'],['SM_Glasses_Eyes','Googly Eyes'],['SM_Glasses_FakeNose','Fake Nose Glasses'],['SM_Glasses_Santa','Santa Glasses'],['SM_Glasses_CandyCane','Candy Cane Glasses'],['SM_Glasses_Bildt','Bildt Glasses']],
+    tapes:[['MSS_Music_Processed_Tape_Tom_Episode01',"Tom's Tape 1: New Beginnings",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode02',"Tom's Tape 2: Arrival",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode03',"Tom's Tape 3: Absolute Chaos",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode04',"Tom's Tape 4: Marketplace",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode05',"Tom's Tape 5: Warm Gloves",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode06',"Tom's Tape 6: Untitled",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode07',"Tom's Tape 7: Melt",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode08',"Tom's Tape 8: Breakthrough",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode09',"Tom's Tape 9: Crystal Cave",'Tom'],
+      ['MSS_Music_Processed_Tape_Archibald_TheDevas','Archibald: The Devas','Archibald'],['MSS_Music_Processed_Tape_Archibald_TheGambit','Archibald: The Gambit','Archibald'],['MSS_Music_Processed_Tape_Archibald_OldManStarik','Archibald: Old Man Starik','Archibald'],
+      ['MSS_Music_Processed_Tape_Music_BABAYAN','Babayan','Music'],['MSS_Music_Processed_Tape_Music_FlyingLepeshki','Flying Lepeshki','Music'],['MSS_Music_Processed_Tape_Music_ValentinasDance',"Valentina's Dance",'Music'],['MSS_Music_Processed_Tape_Music_ShashlikLagman','Shashlik Lagman','Music'],['MSS_Music_Processed_Tape_Music_IPlovYou','I Plov You','Music'],['MSS_Music_Processed_Tape_Music_ChristmasTime','Christmas Time','Music'],['MSS_Music_Processed_Tape_Music_YurbuttskNationalAnthem','Yurbuttsk National Anthem','Music'],['MSS_Music_Processed_Tape_Music_ThreeStripes','Three Stripes','Music']] },
+  { id:'jungle', name:'Jungle', tag:/jungle/i, checkpoints:22,
+    cos:[['SM_Hat_Pirate','Pirate Hat'],['SM_Hat_Conquistador','Conquistador Helmet'],['SM_Hat_Straw','Straw Hat'],['SM_Hat_Tourist','Tourist Hat'],['SM_Hat_Sailor','Sailor Hat'],['SM_Hat_Bowler','Bowler Hat'],['SM_Hat_FlatCap','Flat Cap'],['SM_Hat_Backwards','Backwards Cap'],['SM_Hat_HeadBand','Headband'],['SM_Hat_Graduation','Graduation Cap'],['SM_Hat_Dive','Diving Helmet'],['SM_Hat_Swim','Swim Cap'],['SM_Hat_Plane','Plane Hat'],['SM_Hat_Plunger','Plunger'],['SM_Hat_Underpants','Underpants'],
+      ['SM_Glasses_Patch','Eye Patch'],['SM_Glasses_Scuba','Scuba Mask'],['SM_Glasses_Swim','Swim Goggles'],['SM_Glasses_Caffeine','Caffeine Glasses'],['SM_Glasses_Giant','Giant Glasses'],['SM_Glasses_Rectangle','Rectangle Glasses'],['SM_Glasses_Duo','Duo Glasses'],['SM_Glasses_Speed','Speed Glasses'],['SM_Glasses_Heart','Heart Glasses']],
+    tapes:[...Array.from({length:14},(_,i)=>{const n=String(i+1).padStart(2,'0');return ['MSS_Music_Processed_Tape_Archibald_Episode'+n,'Archibald, Episode '+(i+1),'Archibald']}),
+      ['MSS_Music_Processed_Tape_Blanket_Fort','Old Tape 1: Blanket Fort','Old tape'],['MSS_Music_Processed_Tape_To_Be_Queen','Old Tape 2: To Be Queen','Old tape'],['MSS_Music_Processed_Tape_To_Summon_A_Genie','Old Tape 3: To Summon a Genie','Old tape'],
+      ['MSS_Music_Processed_Tape_Music_Ronkibite','Ronkibite','Music'],['MSS_Music_Processed_Tape_Music_TheMamaAndThePapa','The Mama and the Papa','Music'],['MSS_Music_Processed_Tape_Music_CoconutIsland','Coconut Island','Music'],['MSS_Music_Processed_Tape_Music_LaLicencia','La Licencia','Music'],['MSS_Music_Processed_Tape_Music_WinchItUp','Winch It Up','Music'],['MSS_Music_Processed_Tape_Music_MagicalTropicalIslandTimes','Magical Tropical Island Times','Music'],['MSS_Music_Processed_Tape_Music_InTheAir','In the Air','Music'],['MSS_Music_Processed_Tape_Music_AspectOfTheHawk','Aspect of the Hawk','Music'],['MSS_Music_Processed_Tape_Music_TooShyToGetMarried','Too Shy to Get Married','Music']] },
+  { id:'golf', name:'Golf Course', tag:/golf/i, checkpoints:0,
+    cos:[['SM_Glasses_GlofMaster','Golf Master Glasses']], tapes:[] }
+];
+const ITEMS = {};
+for (const m of MAPS){
+  m.items = [
+    ...m.cos.map(([a,n])=>({id:a,name:n,map:m.id,type:a.startsWith('SM_Hat')?'hat':'glasses',kind:a.startsWith('SM_Hat')?'Hat':'Glasses',keys:[a]})),
+    ...m.tapes.map(([a,n,k,al])=>({id:a,name:n,map:m.id,type:'tape',kind:k+' tape',keys:[a,...(al||[])]}))
+  ];
+  m.items.forEach(it=>ITEMS[it.id]=it);
+}
+
+/* ---------- state ---------- */
+const S = { tokens:null, cps:{}, file:null, map:'mabutts', type:'all', show:'all', notes:{}, open:null };
+const store = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}} };
+const prefs = store.get('rv-prefs'); if (prefs){ Object.assign(S,{map:prefs.map||S.map,type:prefs.type||'all',show:prefs.show||'all'}); }
+const last = store.get('rv-last'); if (last && last.tokens){ S.tokens=new Set(last.tokens); S.cps=last.cps||{}; S.file=last.file; }
+const savePrefs = ()=>store.set('rv-prefs',{map:S.map,type:S.type,show:S.show});
+
+/* ---------- save parsing ---------- */
+function parseSav(buf){
+  const u = new Uint8Array(buf);
+  if (u.length<4 || String.fromCharCode(u[0],u[1],u[2],u[3])!=='GVAS') throw new Error('This file isn’t an Unreal save (it should start with GVAS). Pick PlayerProgression--1.sav.');
+  const tokens = new Set(); let s='';
+  for (let i=0;i<u.length;i++){ const b=u[i]; if (b>=32&&b<127) s+=String.fromCharCode(b); else { if (s.length>=4) tokens.add(s); s=''; } }
+  const cps = {}; const dv = new DataView(buf);
+  const pat = [76,101,118,101,108,46]; // "Level."
+  for (let i=0;i<u.length-6;i++){
+    let ok=true; for (let j=0;j<6;j++) if (u[i+j]!==pat[j]){ok=false;break}
+    if (!ok) continue;
+    let e=i; while (e<u.length && u[e]!==0) e++;
+    const tag = String.fromCharCode(...u.slice(i,e));
+    const p = e+1;
+    if (p+13<=u.length && dv.getInt32(p,true)===5 && String.fromCharCode(...u.slice(p+4,p+8))==='None'){
+      const v = dv.getInt32(p+9,true); if (v>=0 && v<1000) cps[tag]=v;
+    }
+  }
+  return { tokens, cps };
+}
+function parseJson(text){
+  const j = JSON.parse(text); const tokens = new Set(); const cps = {};
+  (function walk(x){
+    if (typeof x==='string'){ tokens.add(x); const seg=x.split(/[\/.]/).pop(); if (seg) tokens.add(seg); return; }
+    if (Array.isArray(x)) return x.forEach(walk);
+    if (x && typeof x==='object') Object.values(x).forEach(walk);
+  })(j);
+  for (const e of (j.CheckpointProgression||[])){ const t=e&&e.Key&&e.Key.TagName; if (t && typeof e.Value==='number') cps[t]=e.Value; }
+  if (!tokens.size) throw new Error('That JSON has nothing in it I recognise.');
+  return { tokens, cps };
+}
+async function loadFile(f){
+  const st = $('#status'); st.className='status'; st.textContent='Reading '+f.name+'…';
+  try{
+    const buf = await f.arrayBuffer();
+    const first = new Uint8Array(buf.slice(0,1))[0];
+    const r = first===0x7b || first===0x5b ? parseJson(new TextDecoder().decode(buf)) : parseSav(buf);
+    S.tokens=r.tokens; S.cps=r.cps; S.file=f.name;
+    store.set('rv-last',{tokens:[...r.tokens].filter(t=>/^(SM_|MSS_|Level\.)/.test(t)),cps:r.cps,file:f.name});
+    render();
+  }catch(e){ st.className='status err'; st.textContent=e.message||'Couldn’t read that file.'; }
+}
+const has = it => S.tokens && it.keys.some(k=>S.tokens.has(k));
+const cpFor = m => { for (const [t,v] of Object.entries(S.cps)) if (m.tag.test(t)) return v; return null; };
+
+/* ---------- rendering ---------- */
+const $ = s=>document.querySelector(s);
+const el = (tag,attrs={},...kids)=>{ const e=document.createElement(tag); for (const [k,v] of Object.entries(attrs)){ if (k==='class') e.className=v; else if (k.startsWith('on')) e.addEventListener(k.slice(2),v); else if (v!=null) e.setAttribute(k,v); } for (const c of kids.flat()) if (c!=null) e.append(c.nodeType?c:document.createTextNode(c)); return e; };
+const ICONS = {
+  hat:'<svg viewBox="0 0 24 24"><path d="M3 17c3 1.6 15 1.6 18 0"/><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5"/></svg>',
+  glasses:'<svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="3.5"/><circle cx="17" cy="14" r="3.5"/><path d="M10.5 14h3M3.5 13 5 8M20.5 13 19 8"/></svg>',
+  tape:'<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="8.5" cy="11" r="1.8"/><circle cx="15.5" cy="11" r="1.8"/><path d="M6 18.5l1.5-3h9l1.5 3"/></svg>'
+};
+const icon = t => { const d=el('div',{class:'ico','aria-hidden':'true'}); d.innerHTML=ICONS[t]; return d; };
+const pct = (a,b)=> b? Math.round(a/b*100):0;
+
+function render(){
+  const st=$('#status');
+  if (S.tokens){ const all=MAPS.flatMap(m=>m.items); const n=all.filter(has).length; st.className='status ok'; st.textContent=(S.file||'Save')+' loaded: '+n+' of '+all.length+' collectibles found.'; }
+
+  // map tabs
+  const maps=$('#maps'); maps.replaceChildren(...MAPS.map(m=>{
+    const f=m.items.filter(has).length;
+    return el('button',{class:'sign',role:'tab','aria-selected':String(S.map===m.id),type:'button',onclick:()=>{S.map=m.id;savePrefs();render();}},
+      el('span',{class:'n'},m.name), el('span',{class:'pct'}, S.tokens? f+' / '+m.items.length+' found' : m.items.length+' collectibles'));
+  }));
+
+  const m = MAPS.find(x=>x.id===S.map) || MAPS[0];
+  const cos=m.items.filter(i=>i.type!=='tape'), tp=m.items.filter(i=>i.type==='tape');
+  const gauge=(label,got,tot,sub,cls='')=>el('div',{class:'gauge '+cls},
+    el('span',{class:'label'},label),
+    el('div',{class:'v'}, S.tokens&&got!=null? String(got):'–', el('small',{},' / '+tot)),
+    el('div',{class:'bar'},Object.assign(el('i'),{style:'width:'+(S.tokens&&got!=null?pct(got,tot):0)+'%'})),
+    el('span',{class:'sub'},sub));
+  const cfound=cos.filter(has).length, tfound=tp.filter(has).length, cp=cpFor(m);
+  $('#gauges').replaceChildren(
+    gauge('Cosmetics',cfound,cos.length, S.tokens? (cos.length-cfound)+' still to find' : 'Load a save to count'),
+    tp.length? gauge('Cassette tapes',tfound,tp.length, S.tokens? (tp.length-tfound)+' still to hear' : 'Load a save to count') : gauge('Cassette tapes',0,0,'No tapes on this map'),
+    m.checkpoints? gauge('Checkpoints',cp,m.checkpoints, S.tokens? (cp==null?'Not started yet':cp>=m.checkpoints?'All reached':'Furthest checkpoint reached') : 'Load a save to count','cp') : gauge('Checkpoints',null,0,'This map has no checkpoints','cp')
+  );
+
+  // chips
+  const chip=(group,val,label)=>el('button',{class:'chip',type:'button','aria-pressed':String(S[group]===val),onclick:()=>{S[group]=val;savePrefs();render();}},label);
+  $('#typeChips').replaceChildren(chip('type','all','Everything'),chip('type','hat','Hats'),chip('type','glasses','Glasses'),chip('type','tape','Tapes'));
+  $('#stateChips').replaceChildren(chip('show','all','All'),chip('show','missing','Missing'),chip('show','found','Found'));
+
+  // items
+  const pass = it => (S.type==='all'||S.type===it.type) && (S.show==='all' || !S.tokens || (S.show==='found')===has(it));
+  const groups=[['Hats','hat'],['Glasses','glasses'],['Cassette tapes','tape']];
+  const out=[];
+  for (const [title,type] of groups){
+    const list=m.items.filter(i=>i.type===type&&pass(i));
+    if (!list.length) continue;
+    const all=m.items.filter(i=>i.type===type);
+    out.push(el('div',{class:'section-h'},el('h3',{},title),el('span',{class:'label'},S.tokens? all.filter(has).length+' of '+all.length : all.length+' total')));
+    out.push(el('div',{class:'grid'},list.map(card)));
+  }
+  if (!out.length) out.push(el('div',{class:'empty'}, S.show==='missing'?'Nothing missing here. You found everything that matches this filter.':'Nothing matches this filter yet.'));
+  $('#items').replaceChildren(...out);
+
+  // footnote: unknown collectibles in the save
+  const known=new Set(Object.values(ITEMS).flatMap(i=>i.keys));
+  const extra = S.tokens? [...S.tokens].filter(t=>/^(SM_Hat_|SM_Glasses_|MSS_Music_)/.test(t)&&!known.has(t)) : [];
+  const foot=$('#foot'); foot.replaceChildren(
+    'The item list comes from the game’s files (version 1.4), sorted by the map folder each item sits in. A few may be unused or only unlock through the story. ',
+    extra.length? el('span',{},'Your save also has items this page doesn’t know yet: ', el('code',{},extra.join(', ')),'.') : '');
+  if (S.open) fillDrawer();
+}
+
+function card(it){
+  const f = S.tokens? has(it) : null;
+  const n=(S.notes[it.id]||[]).length;
+  return el('button',{class:'item '+(f===null?'':f?'is-found':'is-missing'),type:'button',onclick:()=>openDrawer(it.id)},
+    icon(it.type),
+    el('span',{class:'nm'},it.name),
+    el('span',{class:'meta'},
+      el('span',{class:'pill '+(f===null?'unknown':f?'found':'missing')}, f===null?'not checked':f?'found':'missing'),
+      it.type==='tape'? el('span',{},it.kind) : null,
+      n? el('span',{},n+(n===1?' note':' notes')) : null));
+}
+
+/* ---------- drawer + shared notes ---------- */
+let db=null, assets=null, user=null, me=null, canWrite=null, canEdit=false;
+function openDrawer(id){ S.open=id; $('#drawer').hidden=false; $('#scrim').hidden=false; $('#noteMsg').textContent=''; fillDrawer(); $('#dClose').focus(); }
+function closeDrawer(){ S.open=null; $('#drawer').hidden=true; $('#scrim').hidden=true; }
+$('#dClose').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
+document.addEventListener('keydown',e=>{ if (e.key==='Escape' && S.open) closeDrawer(); });
+
+async function fillDrawer(){
+  const it=ITEMS[S.open]; if (!it) return;
+  const m=MAPS.find(x=>x.id===it.map);
+  $('#dKind').textContent=m.name+' · '+it.kind;
+  $('#dTitle').textContent=it.name;
+  $('#dAsset').textContent=it.id;
+  const f=S.tokens? has(it):null;
+  $('#dState').replaceChildren(el('span',{class:'pill '+(f===null?'unknown':f?'found':'missing')}, f===null?'Load a save to check this':f?'You have this':'You haven’t found this yet'));
+  const q=encodeURIComponent('RV There Yet '+m.name+' '+it.name+(it.type==='tape'?' cassette tape':'')+' location');
+  $('#dLinks').replaceChildren(
+    el('a',{href:'https://www.youtube.com/results?search_query='+q,target:'_blank',rel:'noopener'},'Search YouTube ↗'),
+    el('a',{href:'https://www.google.com/search?q='+q,target:'_blank',rel:'noopener'},'Search Google ↗'),
+    el('a',{href:'https://steamcommunity.com/app/3949040/guides/?searchText='+encodeURIComponent(it.name),target:'_blank',rel:'noopener'},'Steam guides ↗'));
+  const list=S.notes[it.id]||[];
+  const box=$('#dNotes');
+  if (!db){ box.replaceChildren(el('div',{class:'status'},'Shared notes are available when you’re signed in to Claude.')); }
+  else if (!list.length){ box.replaceChildren(el('div',{class:'status'},'No notes yet. If you know where this is, add the first one below.')); }
+  else {
+    let names={}; try{ if (user) names=await user.profiles([...new Set(list.map(n=>n.by).filter(Boolean))]); }catch(e){}
+    box.replaceChildren(...list.map(n=>{
+      const mine = me && n.by===me;
+      return el('div',{class:'note'},
+        n.text? el('p',{},n.text):null,
+        n.image? Object.assign(el('img',{alt:'Screenshot of where '+it.name+' is',loading:'lazy'}),{src:'/_blob/'+n.image,onerror(){this.replaceWith(el('span',{class:'status'},'Screenshot not available to you.'))}}):null,
+        el('div',{class:'by'}, ((names[n.by]&&names[n.by].name)||'A player')+' · '+new Date(n.at).toLocaleDateString(),
+          (mine||canEdit)? el('button',{type:'button',onclick:()=>delNote(n)},'Delete'):null));
+    }));
+  }
+  $('#addForm').hidden = !db || canWrite===false;
+  $('#noteImg').hidden = !assets;
+}
+async function delNote(n){
+  try{ await db.doc('notes/'+n.id).delete(); if (n.image && assets){ try{await assets.delete(n.image)}catch(e){} } }
+  catch(e){ $('#noteMsg').textContent='Couldn’t delete that note.'; }
+}
+$('#addForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const it=ITEMS[S.open]; const text=$('#noteText').value.trim(); const file=$('#noteImg').files[0];
+  const msg=$('#noteMsg'); msg.className='status';
+  if (!text && !file){ msg.textContent='Write a note or attach a screenshot first.'; return; }
+  const btn=$('#noteSave'); btn.disabled=true; msg.textContent='Saving…';
+  try{
+    let image=null;
+    if (file && assets){ image=(await assets.upload(file)).id; }
+    await db.collection('notes').add({item:it.id,map:it.map,text:text.slice(0,1000),image,by:me||null,at:new Date().toISOString()});
+    $('#noteText').value=''; $('#noteImg').value=''; msg.className='status ok'; msg.textContent='Saved. Thanks for helping other players.';
+  }catch(err){
+    msg.className='status err';
+    const c=err&&err.code;
+    msg.textContent = c==='too_large'?'That image is too big (20 MB max).' : c==='unsupported_type'?'Use a PNG, JPG, WebP or GIF screenshot.' : c==='invalid_argument'?'You can read notes here but not add them.' : 'Couldn’t save. Try again in a moment.';
+    if (c==='invalid_argument'){ canWrite=false; $('#addForm').hidden=true; }
+  }finally{ btn.disabled=false; }
+});
+
+/* ---------- file input + copy ---------- */
+const drop=$('#drop');
+$('#file').addEventListener('change',e=>{ const f=e.target.files[0]; if (f) loadFile(f); e.target.value=''; });
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if (f) loadFile(f); });
+$('#copypath').addEventListener('click',()=>{
+  const t='%LOCALAPPDATA%\\Ride\\Saved\\SaveGames';
+  navigator.clipboard.writeText(t).then(()=>{$('#copymsg').textContent='Copied';},()=>{ const r=document.createRange(); r.selectNodeContents($('#savepath')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $('#copymsg').textContent='Selected. Press Ctrl+C.'; });
+});
+
+render();
+
+/* ---------- capabilities (light up when available) ---------- */
+(async()=>{
+  if (!window.claude || !claude.use) return;
+  try{ user=await claude.use('user'); }catch(e){}
+  if (user){ try{ me=await user.id(); canEdit=!!(await user.canEdit()); canWrite=await user.can('data.write'); }catch(e){} }
+  try{ db=await claude.use('db'); }catch(e){}
+  try{ assets=await claude.use('assets'); }catch(e){}
+  if (!db){ if (S.open) fillDrawer(); return; }
+  db.collection('notes').onSnapshot(snap=>{
+    const by={};
+    for (const d of snap.docs){ const v=d.data(); if (!v||!ITEMS[v.item]) continue; (by[v.item]=by[v.item]||[]).push({...v,id:d.id}); }
+    for (const k in by) by[k].sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+    S.notes=by; render();
+  },()=>{ db=null; render(); });
+  if (S.open) fillDrawer();
+})();
+</script>
