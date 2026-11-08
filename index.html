@@ -3,465 +3,457 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Karla:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap">
 <style>
-/* Layout: a camper-van dashboard. Gauge strip up top, road-sign map tabs, then a grid of item "cassette" cards; a side drawer holds the location notes. */
+/* Layout: a road-trip overworld. Road-sign map tabs, then the map itself (a winding road through every checkpoint), then a filter bar and the item shelf for whatever stop is picked. */
 :root{
   --bg:#e7eee9; --panel:#f8faf6; --ink:#1d2827; --muted:#5a6b68; --line:#c9d6cf;
-  --rust:#d4572a; --mustard:#e2a92f; --teal:#2a7a73; --teal-soft:#d3e8e3; --rust-soft:#f6dccf;
-  --found:#2a7a73; --missing:#d4572a;
-  --display:"Bungee", "Arial Black", Impact, sans-serif;
-  --body:"Karla", "Segoe UI", system-ui, sans-serif;
-  --mono:"Space Mono", ui-monospace, Consolas, monospace;
-  --shadow:0 1px 0 rgba(29,40,39,.08), 0 6px 18px -10px rgba(29,40,39,.35);
+  --rust:#d4572a; --mustard:#e2a92f; --teal:#2a7a73; --teal-soft:#d3e8e3;
+  --go:#3d8a3e; --go-soft:#dcebd5; --amber:#e2a02a; --amber-soft:#f8e7c4; --grey:#a9b2ae; --grey-soft:#e3e7e5;
+  --road:#5b5e5a; --roadline:#f3e9cf; --trail:#e2a92f;
+  --land:#d9e3b9; --land2:#c8d79e; --water:#a9d0d6; --deco:#7d9a52; --deco2:#b98a4e;
+  --display:"Bungee","Arial Black",Impact,sans-serif;
+  --body:"Karla","Segoe UI",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,Consolas,monospace;
+  --shadow:0 1px 0 rgba(29,40,39,.08),0 6px 18px -10px rgba(29,40,39,.35);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#121b1a; --panel:#1a2524; --ink:#e8efe9; --muted:#9db0ab; --line:#2c3b39;
-  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532; --rust-soft:#3a2219;
-  --found:#5cc0b5; --missing:#ef7a4c; --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}}
+  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532;
+  --go:#6cc070; --go-soft:#1e3420; --amber:#f0b84a; --amber-soft:#3b2e14; --grey:#5f6b67; --grey-soft:#26302e;
+  --road:#3a3d3b; --roadline:#c9bd9c; --trail:#f0bd4f;
+  --land:#29351f; --land2:#314027; --water:#1f3b44; --deco:#4f6b33; --deco2:#7a5a33;
+  --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121b1a; --panel:#1a2524; --ink:#e8efe9; --muted:#9db0ab; --line:#2c3b39;
-  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532; --rust-soft:#3a2219;
-  --found:#5cc0b5; --missing:#ef7a4c; --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}
+  --rust:#ef7a4c; --mustard:#f0bd4f; --teal:#5cc0b5; --teal-soft:#1d3532;
+  --go:#6cc070; --go-soft:#1e3420; --amber:#f0b84a; --amber-soft:#3b2e14; --grey:#5f6b67; --grey-soft:#26302e;
+  --road:#3a3d3b; --roadline:#c9bd9c; --trail:#f0bd4f;
+  --land:#29351f; --land2:#314027; --water:#1f3b44; --deco:#4f6b33; --deco2:#7a5a33;
+  --shadow:0 6px 18px -10px rgba(0,0,0,.7); color-scheme:dark}
+/* per-map terrain */
+.world[data-map="snow"]{--land:#eef3f6; --land2:#dde8ee; --water:#bcd6e6; --deco:#3f6b5a; --deco2:#ffffff}
+.world[data-map="jungle"]{--land:#bfdc9c; --land2:#a6cd7f; --water:#8cc9d3; --deco:#3e7a3a; --deco2:#7a5a2e}
+.world[data-map="golf"]{--land:#c9e3a5; --land2:#b2d68a; --water:#a3d1dc; --deco:#4c8a3f; --deco2:#ffffff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .world[data-map="snow"]{--land:#25333a; --land2:#2c3d45; --water:#1c3444; --deco:#3c6656; --deco2:#c7d6de}
+ :root:not([data-theme="light"]) .world[data-map="jungle"]{--land:#22381f; --land2:#2a4526; --water:#173a40; --deco:#3f7a3a; --deco2:#6e532c}
+ :root:not([data-theme="light"]) .world[data-map="golf"]{--land:#253a20; --land2:#2d4727; --water:#1b3a42; --deco:#4c8a3f; --deco2:#c7d6de}}
+:root[data-theme="dark"] .world[data-map="snow"]{--land:#25333a; --land2:#2c3d45; --water:#1c3444; --deco:#3c6656; --deco2:#c7d6de}
+:root[data-theme="dark"] .world[data-map="jungle"]{--land:#22381f; --land2:#2a4526; --water:#173a40; --deco:#3f7a3a; --deco2:#6e532c}
+:root[data-theme="dark"] .world[data-map="golf"]{--land:#253a20; --land2:#2d4727; --water:#1b3a42; --deco:#4c8a3f; --deco2:#c7d6de}
+
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:22px}
+.wrap{max-width:1480px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px;display:flex;flex-direction:column;gap:18px}
 h1,h2,h3{text-wrap:balance;margin:0}
-button,input,textarea{font:inherit;color:inherit}
+button,input{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--mustard);outline-offset:2px}
 .label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 
-/* header */
-header{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
-.brand h1{font-family:var(--display);font-size:clamp(28px,5vw,44px);line-height:1;letter-spacing:.01em}
+/* header + loader */
+.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:18px;align-items:end}
+.brand h1{font-family:var(--display);font-size:clamp(28px,4vw,44px);line-height:1}
 .brand h1 .q{color:var(--rust)}
-.brand p{margin:8px 0 0;color:var(--muted);max-width:60ch}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:62ch}
 .stripe{height:10px;border-radius:2px;background:linear-gradient(90deg,var(--rust) 0 33%,var(--mustard) 33% 66%,var(--teal) 66%)}
-
-/* loader */
-.loader{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
-.drop{border:2px dashed var(--line);border-radius:14px;background:var(--panel);padding:22px;display:flex;gap:18px;align-items:center;transition:border-color .15s,background .15s}
+.drop{border:2px dashed var(--line);border-radius:14px;background:var(--panel);padding:14px 16px;display:flex;gap:14px;align-items:center;transition:border-color .15s,background .15s;cursor:pointer}
 .drop.over{border-color:var(--teal);background:var(--teal-soft)}
-.drop .tape{flex:none;width:86px;height:56px;border-radius:7px;background:var(--ink);position:relative}
-.drop .tape::before{content:"";position:absolute;inset:8px 8px 20px;border-radius:3px;background:var(--mustard)}
-.drop .tape::after{content:"";position:absolute;left:20px;right:20px;bottom:7px;height:10px;border-radius:8px;background:radial-gradient(circle at 6px 50%,var(--panel) 3px,transparent 4px),radial-gradient(circle at calc(100% - 6px) 50%,var(--panel) 3px,transparent 4px),var(--muted)}
-.drop h2{font-size:18px;font-weight:700}
-.drop p{margin:2px 0 10px;color:var(--muted)}
-.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 16px;font-weight:700;background:var(--rust);color:#fff}
-.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.btn:disabled{opacity:.5;cursor:default}
-.where{border-radius:14px;background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.where code{font-family:var(--mono);font-size:12px;background:var(--bg);border-radius:6px;padding:8px 10px;display:block;overflow-x:auto;white-space:nowrap}
-.where .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tape{flex:none;width:64px;height:42px;border-radius:6px;background:var(--ink);position:relative}
+.tape::before{content:"";position:absolute;inset:6px 6px 15px;border-radius:2px;background:var(--mustard)}
+.tape::after{content:"";position:absolute;left:15px;right:15px;bottom:5px;height:8px;border-radius:6px;background:radial-gradient(circle at 5px 50%,var(--panel) 2px,transparent 3px),radial-gradient(circle at calc(100% - 5px) 50%,var(--panel) 2px,transparent 3px),var(--muted)}
+.drop b{font-weight:700}
+.drop .hint{font-size:13px;color:var(--muted)}
+.drop code{font-family:var(--mono);font-size:11.5px;overflow-wrap:anywhere}
 .status{font-size:13px;color:var(--muted)}
-.status.err{color:var(--missing)}
-.status.ok{color:var(--found)}
+.status.err{color:var(--rust)} .status.ok{color:var(--go)}
 
 /* map tabs */
 .maps{display:flex;gap:10px;flex-wrap:wrap}
-.sign{border:2px solid var(--ink);background:var(--panel);border-radius:8px;padding:8px 14px 7px;display:flex;flex-direction:column;align-items:flex-start;min-width:150px;box-shadow:var(--shadow)}
+.sign{border:2px solid var(--ink);background:var(--panel);border-radius:8px;padding:8px 14px 7px;display:flex;flex-direction:column;align-items:flex-start;min-width:170px;box-shadow:var(--shadow)}
 .sign .n{font-family:var(--display);font-size:15px;line-height:1.1}
 .sign .pct{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .sign[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
 .sign[aria-selected="true"] .pct{color:#fff;opacity:.85}
 
-/* gauges */
-.gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.gauge{background:var(--panel);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
-.gauge .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;line-height:1}
-.gauge .v small{font-size:15px;color:var(--muted);font-weight:400}
-.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--teal);border-radius:8px;transition:width .4s}
-.gauge.cp .bar i{background:var(--mustard)}
-.gauge .sub{font-size:13px;color:var(--muted)}
+/* world */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:stretch}
+.world{background:var(--land);border-radius:16px;overflow-x:auto;box-shadow:var(--shadow);position:relative}
+.world svg{display:block;width:100%;min-width:760px;height:auto}
+.node{cursor:pointer}
+.node:focus{outline:none}
+.node:focus-visible .badge{stroke:var(--mustard);stroke-width:5}
+.node:hover .badge{transform:scale(1.08)}
+.badge{transition:transform .15s;transform-box:fill-box;transform-origin:center}
+.rv{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-3px)}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:8px 2px 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 
-/* filters */
-.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.side{display:flex;flex-direction:column;gap:10px}
+.gauge{background:var(--panel);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.gauge .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;line-height:1}
+.gauge .v small{font-size:14px;color:var(--muted);font-weight:400}
+.bar{height:7px;border-radius:7px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--go);border-radius:7px;transition:width .4s}
+.gauge.cp .bar i{background:var(--mustard)}
+.gauge .sub{font-size:12.5px;color:var(--muted)}
+
+/* filter bar */
+.bar2{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:var(--panel);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
+.crumb{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.crumb h2{font-family:var(--display);font-size:18px}
+.crumb .count{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.stepper{display:flex;gap:4px}
+.stepper button{border:1.5px solid var(--line);background:transparent;border-radius:8px;width:32px;height:32px;font-weight:700}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:500}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters{display:flex;gap:14px;flex-wrap:wrap}
 
 /* items */
-.section-h{display:flex;align-items:baseline;gap:10px;margin-top:6px}
-.section-h h3{font-family:var(--display);font-size:18px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.item{text-align:left;border:0;background:var(--panel);border-radius:10px;padding:12px 14px 12px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;position:relative;box-shadow:var(--shadow);overflow:hidden}
+.section-h{display:flex;align-items:baseline;gap:10px;margin-top:4px}
+.section-h h3{font-family:var(--display);font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.item{background:var(--panel);border-radius:10px;padding:11px 14px 11px 16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3px 12px;align-items:center;position:relative;box-shadow:var(--shadow);overflow:hidden}
 .item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--line)}
-.item.is-found::before{background:var(--found)}
-.item.is-missing::before{background:var(--missing)}
-.item:hover{transform:translateY(-1px)}
+.item.is-found::before{background:var(--go)} .item.is-missing::before{background:var(--amber)}
 .ico{grid-row:span 2;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:var(--bg)}
 .ico svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.item .nm{font-weight:700;line-height:1.25;min-width:0}
-.item .meta{font-size:12.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;min-width:0}
+.item .nm{font-weight:700;line-height:1.25}
+.item .meta{grid-column:2/4;font-size:12.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.item .yt{grid-row:1;grid-column:3;font-size:12px;color:var(--muted);text-decoration:none;border:1.5px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.item .yt:hover{border-color:var(--rust);color:var(--ink)}
 .pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:1px 6px}
-.pill.found{background:var(--teal-soft);color:var(--found)}
-.pill.missing{background:var(--rust-soft);color:var(--missing)}
-.pill.unknown{background:var(--bg);color:var(--muted)}
+.pill.found{background:var(--go-soft);color:var(--go)} .pill.missing{background:var(--amber-soft);color:var(--ink)} .pill.unknown{background:var(--bg);color:var(--muted)}
+.cpchip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:transparent;border-radius:4px;padding:0 5px;color:var(--muted)}
+.cpchip:hover{border-color:var(--ink);color:var(--ink)}
+.cpchip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .empty{color:var(--muted);padding:18px;background:var(--panel);border-radius:10px}
-.foot{font-size:13px;color:var(--muted);max-width:75ch}
-.foot code{font-family:var(--mono);font-size:12px}
-
-/* drawer */
-.scrim{position:fixed;inset:0;background:rgba(10,16,15,.45);z-index:20}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--panel);z-index:21;display:flex;flex-direction:column;box-shadow:-10px 0 40px -20px rgba(0,0,0,.6);
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
-.drawer .hd{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
-.drawer .hd h2{font-family:var(--display);font-size:20px;line-height:1.15}
-.drawer .hd .x{margin-left:auto;border:0;background:var(--bg);border-radius:8px;width:34px;height:34px;font-size:18px;flex:none}
-.drawer .bd{padding:16px 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
-.asset{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
-.links{display:flex;gap:8px;flex-wrap:wrap}
-.links a{color:var(--ink);text-decoration:none;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:500;font-size:14px}
-.links a:hover{border-color:var(--rust)}
-.note{background:var(--bg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
-.note img{border-radius:6px;display:block;max-height:280px;object-fit:contain;background:var(--panel)}
-.note .by{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
-.note .by button{margin-left:auto;border:0;background:none;color:var(--missing);font-size:12px;padding:0}
-form.add{display:flex;flex-direction:column;gap:8px}
-form.add textarea{min-height:80px;resize:vertical;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
-form.add .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-form.add input[type=file]{font-size:13px;max-width:100%}
-@media (max-width:760px){
-  .loader{grid-template-columns:1fr}
-  header{grid-template-columns:1fr}
-  .gauges{grid-template-columns:1fr}
-  .gauge{flex-direction:row;align-items:center;flex-wrap:wrap}
-  .gauge .bar{flex:1 1 120px}
-  .sign{min-width:0;flex:1 1 140px}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}.item:hover{transform:none}}
+.foot{font-size:13px;color:var(--muted);max-width:90ch;margin:0}
+@media (max-width:980px){.top{grid-template-columns:1fr}.stage{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){.side{grid-template-columns:1fr}.sign{min-width:0;flex:1 1 140px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <div class="wrap">
-  <header>
+  <div class="top">
     <div class="brand">
       <h1>RV There Yet<span class="q">?</span> Collectibles</h1>
-      <p>Drop in your save file to see which hats, glasses and cassette tapes you've found on each map, what's still out there, and where other players found them.</p>
+      <p>Every hat, pair of glasses and cassette tape, placed at the checkpoint it's nearest to. Load your save to see which stops still have something for you.</p>
     </div>
-  </header>
-  <div class="stripe" aria-hidden="true"></div>
-
-  <section class="loader">
     <label class="drop" id="drop" for="file">
       <div class="tape" aria-hidden="true"></div>
-      <div style="min-width:0">
-        <h2>Load your save</h2>
-        <p>Drag <b>PlayerProgression--1.sav</b> here, or a JSON export from a save editor. It's read in your browser and never uploaded.</p>
-        <span class="btn">Choose file</span>
-        <input id="file" type="file" accept=".sav,.json" hidden>
-        <div class="status" id="status" style="margin-top:8px" aria-live="polite">No save loaded yet. Everything below shows as unchecked.</div>
+      <div style="min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span><b>Load your save</b>: drop <code>PlayerProgression--1.sav</code> here or click to choose it</span>
+        <span class="hint">Find it at <code>%LOCALAPPDATA%\Ride\Saved\SaveGames\&lt;Steam ID&gt;\</code>. Read in your browser, never uploaded.</span>
+        <span class="status" id="status" aria-live="polite">No save loaded yet.</span>
       </div>
+      <input id="file" type="file" accept=".sav,.json" hidden>
     </label>
-    <div class="where">
-      <span class="label">Where your save lives (Windows)</span>
-      <code id="savepath">%LOCALAPPDATA%\Ride\Saved\SaveGames\&lt;your Steam ID&gt;\PlayerProgression--1.sav</code>
-      <div class="row">
-        <button class="btn ghost" id="copypath" type="button">Copy folder path</button>
-        <span class="status" id="copymsg"></span>
-      </div>
-      <span class="status">Paste the path into File Explorer's address bar, then open the folder named with a long number.</span>
-    </div>
-  </section>
+  </div>
+  <div class="stripe" aria-hidden="true"></div>
 
   <nav class="maps" id="maps" role="tablist" aria-label="Maps"></nav>
 
-  <section class="gauges" id="gauges"></section>
+  <section class="stage">
+    <div>
+      <div class="world" id="world"><svg id="ow" viewBox="0 0 1200 470" role="group" aria-label="Checkpoint map"></svg></div>
+      <div class="legend">
+        <span><i style="background:var(--go)"></i>Reached, everything found</span>
+        <span><i style="background:var(--amber)"></i>Reached or started, something missing</span>
+        <span><i style="background:var(--grey)"></i>Not reached yet</span>
+        <span>Ring = share found at that stop</span>
+      </div>
+    </div>
+    <aside class="side" id="gauges"></aside>
+  </section>
 
-  <div class="filters">
-    <div class="chips" id="typeChips" role="group" aria-label="Item type"></div>
-    <div class="chips" id="stateChips" role="group" aria-label="Status"></div>
+  <div class="bar2">
+    <div class="crumb">
+      <button class="chip" id="allBtn" type="button">All checkpoints</button>
+      <div class="stepper"><button type="button" id="prev" aria-label="Previous checkpoint">‹</button><button type="button" id="next" aria-label="Next checkpoint">›</button></div>
+      <h2 id="crumbT"></h2><span class="count" id="crumbC"></span>
+    </div>
+    <div class="filters">
+      <div class="chips" id="typeChips" role="group" aria-label="Item type"></div>
+      <div class="chips" id="stateChips" role="group" aria-label="Status"></div>
+    </div>
   </div>
 
   <div id="items"></div>
-
   <p class="foot" id="foot"></p>
 </div>
 
-<div class="scrim" id="scrim" hidden></div>
-<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="dTitle">
-  <div class="hd">
-    <div style="min-width:0">
-      <div class="label" id="dKind"></div>
-      <h2 id="dTitle"></h2>
-      <div class="asset" id="dAsset"></div>
-    </div>
-    <button class="x" id="dClose" type="button" aria-label="Close">✕</button>
-  </div>
-  <div class="bd">
-    <div id="dState"></div>
-    <div>
-      <div class="label" style="margin-bottom:6px">Look it up</div>
-      <div class="links" id="dLinks"></div>
-    </div>
-    <div>
-      <div class="label" style="margin-bottom:6px">Location notes from players</div>
-      <div id="dNotes" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
-    <form class="add" id="addForm">
-      <div class="label">Add where you found it</div>
-      <textarea id="noteText" placeholder="e.g. Just after checkpoint 6, on the roof of the gas station. Climb the ladder on the left."></textarea>
-      <div class="row">
-        <input id="noteImg" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-      </div>
-      <div class="row">
-        <button class="btn" id="noteSave" type="submit">Save note</button>
-        <span class="status" id="noteMsg" aria-live="polite"></span>
-      </div>
-    </form>
-  </div>
-</aside>
-
 <script>
-/* ---------- catalogue (from the game's own asset list, v1.4) ---------- */
-const G = n => 'Glasses No. ' + n;
-const MAPS = [
-  { id:'mabutts', name:'Mabutts Valley', tag:/mabutt/i, checkpoints:17,
-    cos:[['SM_Hat_Beret','Beret'],['SM_Hat_Beanie','Beanie'],['SM_Hat_PomPom','Pom-Pom Hat'],['SM_Hat_Safari','Safari Hat'],['SM_Hat_PokerCap','Poker Cap'],['SM_Hat_EarMuffs','Ear Muffs'],['SM_Hat_Watermelon','Watermelon Helmet'],['SM_Hat_Propeller','Propeller Cap'],['SM_Hat_CowBoy','Cowboy Hat'],['SM_Hat_OldManCap','Old Man Cap'],['SM_Hat_MilitrayHelmet','Military Helmet'],['SM_Hat_Fur','Fur Hat'],['SM_Hat_TruckerCap','Trucker Cap'],['SM_Hat_Flaps','Flap Hat'],
-      ['SM_Glasses_01',G(1)],['SM_Glasses_02',G(2)],['SM_Glasses_03',G(3)],['SM_Glasses_04',G(4)],['SM_Glasses_05',G(5)],['SM_Glasses_06',G(6)],['SM_Glasses_07',G(7)],['SM_Glasses_08',G(8)]],
-    tapes:[['MSS_Music_Processed_Tape_AC_Lesson0',"Austin's Lesson 0",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson1',"Austin's Lesson 1",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson2',"Austin's Lesson 2",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson3',"Austin's Lesson 3",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson4',"Austin's Lesson 4",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson5',"Austin's Lesson 5",'Austin'],['MSS_Music_Processed_Tape_AC_Lesson6',"Austin's Lesson 6",'Austin'],['MSS_Music_Processed_Tape_AC_Basement','Austin: Basement','Austin'],['MSS_Music_Processed_Tape_AC_Escape','Austin: Escape','Austin'],
-      ['MSS_Music_Processed_Tape_AudioBook_Fluffington','Fluffington','Audiobook',['MSS_Music_Tape_Story_Fluffington']],['MSS_Music_Processed_Tape_AudioBook_Emperor','The Emperor','Audiobook'],['MSS_Music_Processed_Tape_AudioBook_Werewolf','The Werewolf','Audiobook'],['MSS_Music_Tape_SelfHelp_Ep1','Self Help, Episode 1','Talk'],
-      ['MSS_Music_Processed_Tape_Music_ArcadeUniverse','Arcade Universe','Music'],['MSS_Music_Processed_Tape_Music_StarskyAndClutch','Starsky and Clutch','Music'],['MSS_Music_Processed_Tape_Music_RelaxEmbrace','Relax Embrace','Music'],['MSS_Music_Processed_Tape_Music_LasNochesLibres','Las Noches Libres','Music'],['MSS_Music_Processed_Tape_Music_HardBroBassman','Hard Bro Bassman','Music'],['MSS_Music_Processed_Tape_Music_BlowtorchParadise','Blowtorch Paradise','Music'],['MSS_Music_Processed_Tape_Music_Tiramisu','Tiramisu','Music'],['MSS_Music_Processed_Tape_Music_AngelOfSteel','Angel of Steel','Music'],['MSS_Music_Processed_Tape_Music_AlienHardStyle','Alien Hard Style','Music'],['MSS_Music_Tape_EuroTrashAnthem','Euro Trash Anthem','Music',['MSS_Music_Processed_Tape_Music_EuroTrashAnthem']]] },
-  { id:'snow', name:'Snow', tag:/snow/i, checkpoints:13,
-    cos:[['SM_Hat_Santa','Santa Hat'],['SM_Hat_Elf','Elf Hat'],['SM_Hat_Reindeer','Reindeer Antlers'],['SM_Hat_Knitted','Knitted Hat'],['SM_Hat_KnittedCap','Knitted Cap'],['SM_Hat_KnittedFlaps','Knitted Flap Hat'],['SM_Hat_KnittedPompom','Knitted Pom-Pom'],['SM_Hat_FurSnow','Snow Fur Hat'],['SM_Hat_Shawl','Shawl'],['SM_Hat_Fisher','Fisher Hat'],['SM_Hat_Captain','Captain Hat'],['SM_Hat_BandyHelmet','Bandy Helmet'],['SM_Hat_BeerHelmet','Beer Helmet'],['SM_Hat_SpaceCom','SpaceCom Hat'],['SM_Hat_Jace','Jace Hat'],['SM_Hat_Strut','Strut Hat'],['SM_Hat_HairStrand','Hair Strand'],
-      ['SM_Glasses_SkiGogglesA','Ski Goggles A'],['SM_Glasses_SkiGogglesB','Ski Goggles B'],['SM_Glasses_SnowGoggles','Snow Goggles'],['SM_Glasses_Eyes','Googly Eyes'],['SM_Glasses_FakeNose','Fake Nose Glasses'],['SM_Glasses_Santa','Santa Glasses'],['SM_Glasses_CandyCane','Candy Cane Glasses'],['SM_Glasses_Bildt','Bildt Glasses']],
-    tapes:[['MSS_Music_Processed_Tape_Tom_Episode01',"Tom's Tape 1: New Beginnings",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode02',"Tom's Tape 2: Arrival",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode03',"Tom's Tape 3: Absolute Chaos",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode04',"Tom's Tape 4: Marketplace",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode05',"Tom's Tape 5: Warm Gloves",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode06',"Tom's Tape 6: Untitled",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode07',"Tom's Tape 7: Melt",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode08',"Tom's Tape 8: Breakthrough",'Tom'],['MSS_Music_Processed_Tape_Tom_Episode09',"Tom's Tape 9: Crystal Cave",'Tom'],
-      ['MSS_Music_Processed_Tape_Archibald_TheDevas','Archibald: The Devas','Archibald'],['MSS_Music_Processed_Tape_Archibald_TheGambit','Archibald: The Gambit','Archibald'],['MSS_Music_Processed_Tape_Archibald_OldManStarik','Archibald: Old Man Starik','Archibald'],
-      ['MSS_Music_Processed_Tape_Music_BABAYAN','Babayan','Music'],['MSS_Music_Processed_Tape_Music_FlyingLepeshki','Flying Lepeshki','Music'],['MSS_Music_Processed_Tape_Music_ValentinasDance',"Valentina's Dance",'Music'],['MSS_Music_Processed_Tape_Music_ShashlikLagman','Shashlik Lagman','Music'],['MSS_Music_Processed_Tape_Music_IPlovYou','I Plov You','Music'],['MSS_Music_Processed_Tape_Music_ChristmasTime','Christmas Time','Music'],['MSS_Music_Processed_Tape_Music_YurbuttskNationalAnthem','Yurbuttsk National Anthem','Music'],['MSS_Music_Processed_Tape_Music_ThreeStripes','Three Stripes','Music']] },
-  { id:'jungle', name:'Jungle', tag:/jungle/i, checkpoints:22,
-    cos:[['SM_Hat_Pirate','Pirate Hat'],['SM_Hat_Conquistador','Conquistador Helmet'],['SM_Hat_Straw','Straw Hat'],['SM_Hat_Tourist','Tourist Hat'],['SM_Hat_Sailor','Sailor Hat'],['SM_Hat_Bowler','Bowler Hat'],['SM_Hat_FlatCap','Flat Cap'],['SM_Hat_Backwards','Backwards Cap'],['SM_Hat_HeadBand','Headband'],['SM_Hat_Graduation','Graduation Cap'],['SM_Hat_Dive','Diving Helmet'],['SM_Hat_Swim','Swim Cap'],['SM_Hat_Plane','Plane Hat'],['SM_Hat_Plunger','Plunger'],['SM_Hat_Underpants','Underpants'],
-      ['SM_Glasses_Patch','Eye Patch'],['SM_Glasses_Scuba','Scuba Mask'],['SM_Glasses_Swim','Swim Goggles'],['SM_Glasses_Caffeine','Caffeine Glasses'],['SM_Glasses_Giant','Giant Glasses'],['SM_Glasses_Rectangle','Rectangle Glasses'],['SM_Glasses_Duo','Duo Glasses'],['SM_Glasses_Speed','Speed Glasses'],['SM_Glasses_Heart','Heart Glasses']],
-    tapes:[...Array.from({length:14},(_,i)=>{const n=String(i+1).padStart(2,'0');return ['MSS_Music_Processed_Tape_Archibald_Episode'+n,'Archibald, Episode '+(i+1),'Archibald']}),
-      ['MSS_Music_Processed_Tape_Blanket_Fort','Old Tape 1: Blanket Fort','Old tape'],['MSS_Music_Processed_Tape_To_Be_Queen','Old Tape 2: To Be Queen','Old tape'],['MSS_Music_Processed_Tape_To_Summon_A_Genie','Old Tape 3: To Summon a Genie','Old tape'],
-      ['MSS_Music_Processed_Tape_Music_Ronkibite','Ronkibite','Music'],['MSS_Music_Processed_Tape_Music_TheMamaAndThePapa','The Mama and the Papa','Music'],['MSS_Music_Processed_Tape_Music_CoconutIsland','Coconut Island','Music'],['MSS_Music_Processed_Tape_Music_LaLicencia','La Licencia','Music'],['MSS_Music_Processed_Tape_Music_WinchItUp','Winch It Up','Music'],['MSS_Music_Processed_Tape_Music_MagicalTropicalIslandTimes','Magical Tropical Island Times','Music'],['MSS_Music_Processed_Tape_Music_InTheAir','In the Air','Music'],['MSS_Music_Processed_Tape_Music_AspectOfTheHawk','Aspect of the Hawk','Music'],['MSS_Music_Processed_Tape_Music_TooShyToGetMarried','Too Shy to Get Married','Music']] },
-  { id:'golf', name:'Golf Course', tag:/golf/i, checkpoints:0,
-    cos:[['SM_Glasses_GlofMaster','Golf Master Glasses']], tapes:[] }
+/* ---------- data pulled from the game files (v1.4) ---------- */
+const PLACE = {"mabutts":{"cps":[[0,-70093,-10237],[1,-24776,49272],[2,-16152,81322],[3,43630,52931],[4,79451,-23142],[5,98710,70275],[6,122749,151160],[7,154092,82544],[8,152632,72332],[9,184941,31125],[10,201916,-3887],[11,125415,-40181],[12,98944,-65409],[13,45030,-60911],[14,-100006,-76489],[15,-88013,-189301],[16,-5036,-228301],[17,11008,-367001]],"items":{"MSS_Music_Processed_Tape_AC_Basement":[14],"MSS_Music_Processed_Tape_AC_Escape":[15],"MSS_Music_Processed_Tape_AC_Lesson0":[1],"MSS_Music_Processed_Tape_AC_Lesson1":[3],"MSS_Music_Processed_Tape_AC_Lesson2":[3],"MSS_Music_Processed_Tape_AC_Lesson3":[8],"MSS_Music_Processed_Tape_AC_Lesson4":[10],"MSS_Music_Processed_Tape_AC_Lesson5":[12],"MSS_Music_Processed_Tape_AC_Lesson6":[13],"MSS_Music_Processed_Tape_AudioBook_Emperor":[3],"MSS_Music_Processed_Tape_AudioBook_Fluffington":[2],"MSS_Music_Processed_Tape_AudioBook_Werewolf":[10],"MSS_Music_Processed_Tape_Music_AngelOfSteel":[2],"MSS_Music_Processed_Tape_Music_ArcadeUniverse":[4],"MSS_Music_Processed_Tape_Music_BlowtorchParadise":[2],"MSS_Music_Processed_Tape_Music_HardBroBassman":[3],"MSS_Music_Processed_Tape_Music_LasNochesLibres":[6],"MSS_Music_Processed_Tape_Music_RelaxEmbrace":[0],"MSS_Music_Processed_Tape_Music_StarskyAndClutch":[12],"MSS_Music_Processed_Tape_Music_Tiramisu":[0],"SM_Glasses_02":[0,1],"SM_Glasses_03":[2],"SM_Glasses_04":[3,8,12],"SM_Glasses_05":[2],"SM_Glasses_06":[1,3,12,15],"SM_Glasses_07":[2,3,8,12],"SM_Glasses_08":[2,3,12],"SM_Hat_CowBoy":[1,3],"SM_Hat_EarMuffs":[5],"SM_Hat_MilitrayHelmet":[2],"SM_Hat_PokerCap":[2,3,5,12],"SM_Hat_PomPom":[0,3],"SM_Hat_Safari":[3],"SM_Hat_TruckerCap":[0],"SM_Hat_Watermelon":[2,3,5]}},"snow":{"cps":[[0,-39195,44262],[1,-15025,-24779],[2,18335,5277],[3,70932,-23739],[4,87521,-7777],[5,110337,-49137],[6,136111,-46099],[7,178014,5814],[8,179165,-23747],[9,184840,-82290],[10,65896,-123894],[11,-41787,-68406],[12,-8461,-195776],[13,13090,-288763],[14,-76044,-305215]],"items":{"MSS_Music_Processed_Tape_Music_BABAYAN":[2],"MSS_Music_Processed_Tape_Music_ChristmasTime":[10],"MSS_Music_Processed_Tape_Music_FlyingLepeshki":[4],"MSS_Music_Processed_Tape_Music_IPlovYou":[3],"MSS_Music_Processed_Tape_Music_RelaxEmbrace":[0],"MSS_Music_Processed_Tape_Music_ShashlikLagman":[5],"MSS_Music_Processed_Tape_Music_ThreeStripes":[9],"MSS_Music_Processed_Tape_Music_ValentinasDance":[6],"MSS_Music_Processed_Tape_Music_YurbuttskNationalAnthem":[9],"MSS_Music_Processed_Tape_Tom_Episode01":[1],"MSS_Music_Processed_Tape_Tom_Episode02":[2],"MSS_Music_Processed_Tape_Tom_Episode03":[3],"MSS_Music_Processed_Tape_Tom_Episode04":[4],"MSS_Music_Processed_Tape_Tom_Episode05":[6],"MSS_Music_Processed_Tape_Tom_Episode06":[7],"MSS_Music_Processed_Tape_Tom_Episode07":[9],"MSS_Music_Processed_Tape_Tom_Episode08":[10],"MSS_Music_Processed_Tape_Tom_Episode09":[11],"SM_Glasses_Bildt":[1,7],"SM_Glasses_CandyCane":[1],"SM_Glasses_Eyes":[7,8,10,11],"SM_Glasses_FakeNose":[8,9,10],"SM_Glasses_Santa":[1,7,11],"SM_Glasses_SkiGogglesA":[0,3,7,10,11],"SM_Glasses_SkiGogglesB":[0,1,8],"SM_Glasses_SnowGoggles":[3,10,11],"SM_Hat_BandyHelmet":[0,2,11],"SM_Hat_BeerHelmet":[2,3,9],"SM_Hat_Captain":[6,8,9],"SM_Hat_Elf":[1,2,4,9],"SM_Hat_Fisher":[4,7],"SM_Hat_FurSnow":[0,2],"SM_Hat_HairStrand":[0,10],"SM_Hat_Jace":[2,4],"SM_Hat_Knitted":[3,5,8,11],"SM_Hat_KnittedCap":[4,11],"SM_Hat_KnittedFlaps":[2,3,11],"SM_Hat_KnittedPompom":[2],"SM_Hat_Reindeer":[1,9],"SM_Hat_Santa":[1,2,4,9],"SM_Hat_Shawl":[2,5,7,10],"SM_Hat_SpaceCom":[7,9],"SM_Hat_Strut":[1,9],"SM_Hat_Watermelon":[12]}},"jungle":{"cps":[[0,-468887,55382],[1,-426702,30177],[2,-382598,-4859],[3,-334726,112922],[4,-370025,168790],[5,-199197,43811],[6,-162217,90891],[7,-36068,106795],[8,13993,103263],[9,30292,75137],[10,86083,2827],[11,91854,-128036],[12,5103,-150146],[13,-45112,-273259],[14,109404,-220296],[15,166406,-213244],[16,228976,-148566],[17,165554,-72284],[18,163878,-105],[19,163777,1998],[20,167814,21138],[21,195235,150885],[22,199516,167304]],"items":{"MSS_Music_Processed_Tape_Archibald_Episode01":[1],"MSS_Music_Processed_Tape_Archibald_Episode02":[3],"MSS_Music_Processed_Tape_Archibald_Episode03":[4],"MSS_Music_Processed_Tape_Archibald_Episode04":[16],"MSS_Music_Processed_Tape_Archibald_Episode05":[5],"MSS_Music_Processed_Tape_Archibald_Episode06":[6],"MSS_Music_Processed_Tape_Archibald_Episode07":[7],"MSS_Music_Processed_Tape_Archibald_Episode08":[8],"MSS_Music_Processed_Tape_Archibald_Episode09":[9],"MSS_Music_Processed_Tape_Archibald_Episode10":[12],"MSS_Music_Processed_Tape_Archibald_Episode11":[10],"MSS_Music_Processed_Tape_Archibald_Episode12":[14],"MSS_Music_Processed_Tape_Archibald_Episode13":[15],"MSS_Music_Processed_Tape_Archibald_Episode14":[17],"MSS_Music_Processed_Tape_Blanket_Fort":[4],"MSS_Music_Processed_Tape_Music_ArcadeUniverse":[8],"MSS_Music_Processed_Tape_Music_AspectOfTheHawk":[9],"MSS_Music_Processed_Tape_Music_BABAYAN":[5],"MSS_Music_Processed_Tape_Music_CoconutIsland":[1],"MSS_Music_Processed_Tape_Music_HardBroBassman":[14],"MSS_Music_Processed_Tape_Music_InTheAir":[0],"MSS_Music_Processed_Tape_Music_LaLicencia":[14],"MSS_Music_Processed_Tape_Music_LasNochesLibres":[14],"MSS_Music_Processed_Tape_Music_MagicalTropicalIslandTimes":[2],"MSS_Music_Processed_Tape_Music_RelaxEmbrace":[3],"MSS_Music_Processed_Tape_Music_Ronkibite":[5],"MSS_Music_Processed_Tape_Music_Tiramisu":[5],"MSS_Music_Processed_Tape_Music_TooShyToGetMarried":[13],"MSS_Music_Processed_Tape_Music_ValentinasDance":[6],"MSS_Music_Processed_Tape_Music_WinchItUp":[10],"MSS_Music_Processed_Tape_To_Be_Queen":[12],"MSS_Music_Processed_Tape_To_Summon_A_Genie":[14],"SM_Glasses_Caffeine":[6,9,11,13,14],"SM_Glasses_Duo":[0,1,3,9,16],"SM_Glasses_Giant":[1,5,7,10],"SM_Glasses_Heart":[3,7,12,14],"SM_Glasses_Patch":[3,7,13],"SM_Glasses_Rectangle":[1,5,11,12],"SM_Glasses_Scuba":[0,3,4,10,11],"SM_Glasses_Speed":[4,11,14],"SM_Glasses_Swim":[0,3,10,16],"SM_Hat_Backwards":[3,4,9,10],"SM_Hat_Bowler":[4,5,9,12],"SM_Hat_Conquistador":[5,7,10,17],"SM_Hat_Dive":[4,9,12],"SM_Hat_FlatCap":[3,5,10,13],"SM_Hat_Graduation":[22],"SM_Hat_HeadBand":[3,5,10,14],"SM_Hat_Pirate":[3,9],"SM_Hat_Plane":[16],"SM_Hat_Plunger":[6,9,11,13,14],"SM_Hat_Sailor":[3,4,7],"SM_Hat_Straw":[1,6,7,14],"SM_Hat_Swim":[0,4,10],"SM_Hat_Tourist":[1,6,7,12],"SM_Hat_Underpants":[5,7,9,12,14]}}};
+PLACE.golf = {cps:[[0,0,0]], items:{"SM_Glasses_GlofMaster":[0]}};
+const STARTER = {mabutts:["SM_Hat_Beret","SM_Hat_Beanie","SM_Glasses_01"]};
+const UNPLACED = "Propeller Cap, Old Man Cap, Flap Hat and Fur Hat";
+
+const T='MSS_Music_Processed_Tape_';
+const NAMES = {
+  SM_Hat_Beret:'Beret',SM_Hat_Beanie:'Beanie',SM_Hat_PomPom:'Pom-Pom Hat',SM_Hat_Safari:'Safari Hat',SM_Hat_PokerCap:'Poker Cap',SM_Hat_EarMuffs:'Ear Muffs',SM_Hat_Watermelon:'Watermelon Helmet',SM_Hat_CowBoy:'Cowboy Hat',SM_Hat_MilitrayHelmet:'Military Helmet',SM_Hat_TruckerCap:'Trucker Cap',
+  SM_Glasses_01:'Glasses No. 1',SM_Glasses_02:'Glasses No. 2',SM_Glasses_03:'Glasses No. 3',SM_Glasses_04:'Glasses No. 4',SM_Glasses_05:'Glasses No. 5',SM_Glasses_06:'Glasses No. 6',SM_Glasses_07:'Glasses No. 7',SM_Glasses_08:'Glasses No. 8',
+  SM_Hat_Santa:'Santa Hat',SM_Hat_Elf:'Elf Hat',SM_Hat_Reindeer:'Reindeer Antlers',SM_Hat_Knitted:'Knitted Hat',SM_Hat_KnittedCap:'Knitted Cap',SM_Hat_KnittedFlaps:'Knitted Flap Hat',SM_Hat_KnittedPompom:'Knitted Pom-Pom',SM_Hat_FurSnow:'Snow Fur Hat',SM_Hat_Shawl:'Shawl',SM_Hat_Fisher:'Fisher Hat',SM_Hat_Captain:'Captain Hat',SM_Hat_BandyHelmet:'Bandy Helmet',SM_Hat_BeerHelmet:'Beer Helmet',SM_Hat_SpaceCom:'SpaceCom Hat',SM_Hat_Jace:'Jace Hat',SM_Hat_Strut:'Strut Hat',SM_Hat_HairStrand:'Hair Strand',
+  SM_Glasses_SkiGogglesA:'Ski Goggles A',SM_Glasses_SkiGogglesB:'Ski Goggles B',SM_Glasses_SnowGoggles:'Snow Goggles',SM_Glasses_Eyes:'Googly Eyes',SM_Glasses_FakeNose:'Fake Nose Glasses',SM_Glasses_Santa:'Santa Glasses',SM_Glasses_CandyCane:'Candy Cane Glasses',SM_Glasses_Bildt:'Bildt Glasses',
+  SM_Hat_Pirate:'Pirate Hat',SM_Hat_Conquistador:'Conquistador Helmet',SM_Hat_Straw:'Straw Hat',SM_Hat_Tourist:'Tourist Hat',SM_Hat_Sailor:'Sailor Hat',SM_Hat_Bowler:'Bowler Hat',SM_Hat_FlatCap:'Flat Cap',SM_Hat_Backwards:'Backwards Cap',SM_Hat_HeadBand:'Headband',SM_Hat_Graduation:'Graduation Cap',SM_Hat_Dive:'Diving Helmet',SM_Hat_Swim:'Swim Cap',SM_Hat_Plane:'Plane Hat',SM_Hat_Plunger:'Plunger',SM_Hat_Underpants:'Underpants',
+  SM_Glasses_Patch:'Eye Patch',SM_Glasses_Scuba:'Scuba Mask',SM_Glasses_Swim:'Swim Goggles',SM_Glasses_Caffeine:'Caffeine Glasses',SM_Glasses_Giant:'Giant Glasses',SM_Glasses_Rectangle:'Rectangle Glasses',SM_Glasses_Duo:'Duo Glasses',SM_Glasses_Speed:'Speed Glasses',SM_Glasses_Heart:'Heart Glasses',
+  SM_Glasses_GlofMaster:'Golf Master Glasses'
+};
+const TAPES = {
+  AC_Lesson0:["Austin's Lesson 0",'Austin'],AC_Lesson1:["Austin's Lesson 1",'Austin'],AC_Lesson2:["Austin's Lesson 2",'Austin'],AC_Lesson3:["Austin's Lesson 3",'Austin'],AC_Lesson4:["Austin's Lesson 4",'Austin'],AC_Lesson5:["Austin's Lesson 5",'Austin'],AC_Lesson6:["Austin's Lesson 6",'Austin'],AC_Basement:['Austin: Basement','Austin'],AC_Escape:['Austin: Escape','Austin'],
+  AudioBook_Fluffington:['Fluffington','Audiobook'],AudioBook_Emperor:['The Emperor','Audiobook'],AudioBook_Werewolf:['The Werewolf','Audiobook'],
+  Tom_Episode01:["Tom 1: New Beginnings",'Tom'],Tom_Episode02:["Tom 2: Arrival",'Tom'],Tom_Episode03:["Tom 3: Absolute Chaos",'Tom'],Tom_Episode04:["Tom 4: Marketplace",'Tom'],Tom_Episode05:["Tom 5: Warm Gloves",'Tom'],Tom_Episode06:["Tom 6: Untitled",'Tom'],Tom_Episode07:["Tom 7: Melt",'Tom'],Tom_Episode08:["Tom 8: Breakthrough",'Tom'],Tom_Episode09:["Tom 9: Crystal Cave",'Tom'],
+  Blanket_Fort:['Old Tape 1: Blanket Fort','Old tape'],To_Be_Queen:['Old Tape 2: To Be Queen','Old tape'],To_Summon_A_Genie:['Old Tape 3: To Summon a Genie','Old tape'],
+  Music_ArcadeUniverse:['Arcade Universe'],Music_StarskyAndClutch:['Starsky and Clutch'],Music_RelaxEmbrace:['Relax Embrace'],Music_LasNochesLibres:['Las Noches Libres'],Music_HardBroBassman:['Hard Bro Bassman'],Music_BlowtorchParadise:['Blowtorch Paradise'],Music_Tiramisu:['Tiramisu'],Music_AngelOfSteel:['Angel of Steel'],
+  Music_BABAYAN:['Babayan'],Music_FlyingLepeshki:['Flying Lepeshki'],Music_ValentinasDance:["Valentina's Dance"],Music_ShashlikLagman:['Shashlik Lagman'],Music_IPlovYou:['I Plov You'],Music_ChristmasTime:['Christmas Time'],Music_YurbuttskNationalAnthem:['Yurbuttsk National Anthem'],Music_ThreeStripes:['Three Stripes'],
+  Music_Ronkibite:['Ronkibite'],Music_TheMamaAndThePapa:['The Mama and the Papa'],Music_CoconutIsland:['Coconut Island'],Music_LaLicencia:['La Licencia'],Music_WinchItUp:['Winch It Up'],Music_MagicalTropicalIslandTimes:['Magical Tropical Island Times'],Music_InTheAir:['In the Air'],Music_AspectOfTheHawk:['Aspect of the Hawk'],Music_TooShyToGetMarried:['Too Shy to Get Married']
+};
+for (let i=1;i<=14;i++) TAPES['Archibald_Episode'+String(i).padStart(2,'0')]=['Archibald, Episode '+i,'Archibald'];
+
+const MAPS=[
+  {id:'mabutts',name:'Mabutts Valley',tag:/mabutt/i,deco:'mesa'},
+  {id:'snow',name:'Snow',tag:/snow/i,deco:'pine'},
+  {id:'jungle',name:'Jungle',tag:/jungle/i,deco:'palm'},
+  {id:'golf',name:'Golf Course',tag:/golf/i,deco:'flag'}
 ];
-const ITEMS = {};
+const tapeHome={};
 for (const m of MAPS){
-  m.items = [
-    ...m.cos.map(([a,n])=>({id:a,name:n,map:m.id,type:a.startsWith('SM_Hat')?'hat':'glasses',kind:a.startsWith('SM_Hat')?'Hat':'Glasses',keys:[a]})),
-    ...m.tapes.map(([a,n,k,al])=>({id:a,name:n,map:m.id,type:'tape',kind:k+' tape',keys:[a,...(al||[])]}))
-  ];
-  m.items.forEach(it=>ITEMS[it.id]=it);
+  const P=PLACE[m.id]; m.cps=P.cps.map(([n,x,y])=>({n,x,y}));
+  m.items=[];
+  for (const id of (STARTER[m.id]||[])) m.items.push(mk(id,[],true));
+  for (const [id,cps] of Object.entries(P.items)) m.items.push(mk(id,cps,false));
+  m.items.forEach(it=>{ if(it.type==='tape') (tapeHome[it.id]=tapeHome[it.id]||[]).push(m.name); });
+  function mk(id,cps,starter){
+    if (id.startsWith(T)){ const k=id.slice(T.length); const [nm,kind]=TAPES[k]||[k]; return {id,name:nm,type:'tape',kind:(kind||'Music')+' tape',cps,map:m.id}; }
+    const hat=id.startsWith('SM_Hat'); return {id,name:NAMES[id]||id,type:hat?'hat':'glasses',kind:hat?'Hat':'Glasses',cps,starter,map:m.id};
+  }
 }
 
 /* ---------- state ---------- */
-const S = { tokens:null, cps:{}, file:null, map:'mabutts', type:'all', show:'all', notes:{}, open:null };
-const store = { get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}} };
-const prefs = store.get('rv-prefs'); if (prefs){ Object.assign(S,{map:prefs.map||S.map,type:prefs.type||'all',show:prefs.show||'all'}); }
-const last = store.get('rv-last'); if (last && last.tokens){ S.tokens=new Set(last.tokens); S.cps=last.cps||{}; S.file=last.file; }
-const savePrefs = ()=>store.set('rv-prefs',{map:S.map,type:S.type,show:S.show});
+const S={tokens:null,cps:{},file:null,map:'mabutts',sel:null,type:'all',show:'all'};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const pf=store.get('rv-prefs2'); if (pf) Object.assign(S,{map:pf.map||S.map,type:pf.type||'all',show:pf.show||'all'});
+const last=store.get('rv-last'); if (last&&last.tokens){S.tokens=new Set(last.tokens);S.cps=last.cps||{};S.file=last.file;}
+const savePrefs=()=>store.set('rv-prefs2',{map:S.map,type:S.type,show:S.show});
 
 /* ---------- save parsing ---------- */
 function parseSav(buf){
-  const u = new Uint8Array(buf);
-  if (u.length<4 || String.fromCharCode(u[0],u[1],u[2],u[3])!=='GVAS') throw new Error('This file isn’t an Unreal save (it should start with GVAS). Pick PlayerProgression--1.sav.');
-  const tokens = new Set(); let s='';
-  for (let i=0;i<u.length;i++){ const b=u[i]; if (b>=32&&b<127) s+=String.fromCharCode(b); else { if (s.length>=4) tokens.add(s); s=''; } }
-  const cps = {}; const dv = new DataView(buf);
-  const pat = [76,101,118,101,108,46]; // "Level."
+  const u=new Uint8Array(buf);
+  if (u.length<4||String.fromCharCode(u[0],u[1],u[2],u[3])!=='GVAS') throw new Error('That isn’t an RV There Yet? save. Pick PlayerProgression--1.sav.');
+  const tokens=new Set(); let s='';
+  for (let i=0;i<u.length;i++){const b=u[i]; if(b>=32&&b<127) s+=String.fromCharCode(b); else {if(s.length>=4) tokens.add(s); s='';}}
+  const cps={}; const dv=new DataView(buf); const pat=[76,101,118,101,108,46];
   for (let i=0;i<u.length-6;i++){
-    let ok=true; for (let j=0;j<6;j++) if (u[i+j]!==pat[j]){ok=false;break}
-    if (!ok) continue;
-    let e=i; while (e<u.length && u[e]!==0) e++;
-    const tag = String.fromCharCode(...u.slice(i,e));
-    const p = e+1;
-    if (p+13<=u.length && dv.getInt32(p,true)===5 && String.fromCharCode(...u.slice(p+4,p+8))==='None'){
-      const v = dv.getInt32(p+9,true); if (v>=0 && v<1000) cps[tag]=v;
-    }
+    let ok=true; for(let j=0;j<6;j++) if(u[i+j]!==pat[j]){ok=false;break}
+    if(!ok) continue;
+    let e=i; while(e<u.length&&u[e]!==0) e++;
+    const tag=String.fromCharCode(...u.slice(i,e)); const p=e+1;
+    if (p+13<=u.length&&dv.getInt32(p,true)===5&&String.fromCharCode(...u.slice(p+4,p+8))==='None'){const v=dv.getInt32(p+9,true); if(v>=0&&v<1000) cps[tag]=v;}
   }
-  return { tokens, cps };
+  return {tokens,cps};
 }
 function parseJson(text){
-  const j = JSON.parse(text); const tokens = new Set(); const cps = {};
-  (function walk(x){
-    if (typeof x==='string'){ tokens.add(x); const seg=x.split(/[\/.]/).pop(); if (seg) tokens.add(seg); return; }
-    if (Array.isArray(x)) return x.forEach(walk);
-    if (x && typeof x==='object') Object.values(x).forEach(walk);
-  })(j);
-  for (const e of (j.CheckpointProgression||[])){ const t=e&&e.Key&&e.Key.TagName; if (t && typeof e.Value==='number') cps[t]=e.Value; }
-  if (!tokens.size) throw new Error('That JSON has nothing in it I recognise.');
-  return { tokens, cps };
+  const j=JSON.parse(text); const tokens=new Set(); const cps={};
+  (function walk(x){ if(typeof x==='string'){tokens.add(x); const seg=x.split(/[\/.]/).pop(); if(seg) tokens.add(seg); return;} if(Array.isArray(x)) return x.forEach(walk); if(x&&typeof x==='object') Object.values(x).forEach(walk); })(j);
+  for (const e of (j.CheckpointProgression||[])){const t=e&&e.Key&&e.Key.TagName; if(t&&typeof e.Value==='number') cps[t]=e.Value;}
+  if (!tokens.size) throw new Error('That JSON has nothing in it from RV There Yet?.');
+  return {tokens,cps};
 }
 async function loadFile(f){
-  const st = $('#status'); st.className='status'; st.textContent='Reading '+f.name+'…';
+  const st=$('#status'); st.className='status'; st.textContent='Reading '+f.name+'…';
   try{
-    const buf = await f.arrayBuffer();
-    const first = new Uint8Array(buf.slice(0,1))[0];
-    const r = first===0x7b || first===0x5b ? parseJson(new TextDecoder().decode(buf)) : parseSav(buf);
+    const buf=await f.arrayBuffer(); const first=new Uint8Array(buf.slice(0,1))[0];
+    const r=(first===0x7b||first===0x5b)?parseJson(new TextDecoder().decode(buf)):parseSav(buf);
     S.tokens=r.tokens; S.cps=r.cps; S.file=f.name;
     store.set('rv-last',{tokens:[...r.tokens].filter(t=>/^(SM_|MSS_|Level\.)/.test(t)),cps:r.cps,file:f.name});
     render();
   }catch(e){ st.className='status err'; st.textContent=e.message||'Couldn’t read that file.'; }
 }
-const has = it => S.tokens && it.keys.some(k=>S.tokens.has(k));
-const cpFor = m => { for (const [t,v] of Object.entries(S.cps)) if (m.tag.test(t)) return v; return null; };
+const has=it=>!!S.tokens&&S.tokens.has(it.id);
+const reachedOf=m=>{ if(!S.tokens) return null; for(const [t,v] of Object.entries(S.cps)) if(m.tag.test(t)) return v; return 0; };
 
-/* ---------- rendering ---------- */
-const $ = s=>document.querySelector(s);
-const el = (tag,attrs={},...kids)=>{ const e=document.createElement(tag); for (const [k,v] of Object.entries(attrs)){ if (k==='class') e.className=v; else if (k.startsWith('on')) e.addEventListener(k.slice(2),v); else if (v!=null) e.setAttribute(k,v); } for (const c of kids.flat()) if (c!=null) e.append(c.nodeType?c:document.createTextNode(c)); return e; };
-const ICONS = {
-  hat:'<svg viewBox="0 0 24 24"><path d="M3 17c3 1.6 15 1.6 18 0"/><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5"/></svg>',
-  glasses:'<svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="3.5"/><circle cx="17" cy="14" r="3.5"/><path d="M10.5 14h3M3.5 13 5 8M20.5 13 19 8"/></svg>',
-  tape:'<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="8.5" cy="11" r="1.8"/><circle cx="15.5" cy="11" r="1.8"/><path d="M6 18.5l1.5-3h9l1.5 3"/></svg>'
-};
-const icon = t => { const d=el('div',{class:'ico','aria-hidden':'true'}); d.innerHTML=ICONS[t]; return d; };
-const pct = (a,b)=> b? Math.round(a/b*100):0;
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const el=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const [k,v] of Object.entries(attrs)){if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v!=null)e.setAttribute(k,v);}for(const c of kids.flat()) if(c!=null) e.append(c.nodeType?c:document.createTextNode(c));return e;};
+const NS='http://www.w3.org/2000/svg';
+const sv=(tag,attrs={},...kids)=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs)) if(v!=null) e.setAttribute(k,v);for(const c of kids.flat()) if(c!=null) e.append(c.nodeType?c:document.createTextNode(c));return e;};
+const ICONS={hat:'<svg viewBox="0 0 24 24"><path d="M3 17c3 1.6 15 1.6 18 0"/><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5"/></svg>',glasses:'<svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="3.5"/><circle cx="17" cy="14" r="3.5"/><path d="M10.5 14h3M3.5 13 5 8M20.5 13 19 8"/></svg>',tape:'<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="8.5" cy="11" r="1.8"/><circle cx="15.5" cy="11" r="1.8"/><path d="M6 18.5l1.5-3h9l1.5 3"/></svg>'};
+const icon=t=>{const d=el('div',{class:'ico','aria-hidden':'true'});d.innerHTML=ICONS[t];return d;};
+const cur=()=>MAPS.find(m=>m.id===S.map)||MAPS[0];
+const cpLabel=n=>n===0?'Start':'Checkpoint '+n;
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 
+/* checkpoint status: go / amber / grey */
+function cpState(m,n){
+  const its=m.items.filter(i=>i.cps.includes(n)); const got=its.filter(has).length;
+  const r=reachedOf(m); const reached=r!=null&&(n===0?(r>0||got>0):n<=r);
+  if (!S.tokens) return {k:'grey',got,tot:its.length};
+  if (reached&&got===its.length) return {k:'go',got,tot:its.length};
+  if (reached||got>0) return {k:'amber',got,tot:its.length};
+  return {k:'grey',got,tot:its.length};
+}
+
+/* ---------- overworld ---------- */
+const W=1200,H=470,PAD=62;
+function layout(m){
+  const pts=m.cps.map(c=>({n:c.n,x:c.x,y:c.y}));
+  if (pts.length===1) return [{n:pts[0].n,x:W/2,y:H/2}];
+  let xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  let swap=(Math.max(...ys)-Math.min(...ys))>(Math.max(...xs)-Math.min(...xs));
+  let P=pts.map(p=>swap?{n:p.n,x:p.y,y:-p.x}:{n:p.n,x:p.x,y:-p.y});
+  xs=P.map(p=>p.x); ys=P.map(p=>p.y);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min((W-2*PAD)/(x1-x0||1),(H-2*PAD-14)/(y1-y0||1));
+  const ox=(W-(x1-x0)*sc)/2, oy=(H-14-(y1-y0)*sc)/2;
+  P=P.map(p=>({n:p.n,x:ox+(p.x-x0)*sc,y:oy+(p.y-y0)*sc}));
+  for (let it=0;it<120;it++){ /* push apart stops that overlap */
+    for (let i=0;i<P.length;i++) for (let j=i+1;j<P.length;j++){
+      const a=P[i],b=P[j]; let dx=b.x-a.x,dy=b.y-a.y; const d=Math.hypot(dx,dy)||0.01; const min=62;
+      if (d<min){ const f=(min-d)/2/d; dx*=f; dy*=f; a.x-=dx;a.y-=dy;b.x+=dx;b.y+=dy; }
+    }
+    for (const p of P){ p.x=Math.max(PAD-20,Math.min(W-PAD+20,p.x)); p.y=Math.max(PAD-24,Math.min(H-PAD,p.y)); }
+  }
+  return P;
+}
+function curve(P){
+  if (P.length<2) return '';
+  let d=`M${P[0].x},${P[0].y}`;
+  for (let i=0;i<P.length-1;i++){
+    const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||P[i+1];
+    d+=` C${p1.x+(p2.x-p0.x)/6},${p1.y+(p2.y-p0.y)/6} ${p2.x-(p3.x-p1.x)/6},${p2.y-(p3.y-p1.y)/6} ${p2.x},${p2.y}`;
+  }
+  return d;
+}
+function decoShape(kind,x,y,s){
+  if (kind==='pine') return sv('g',{},sv('path',{d:`M${x} ${y-16*s} l${9*s} ${16*s} h${-18*s}z`,fill:'var(--deco)'}),sv('path',{d:`M${x} ${y-16*s} l${4*s} ${7*s} h${-8*s}z`,fill:'var(--deco2)'}));
+  if (kind==='palm') return sv('g',{},sv('path',{d:`M${x} ${y} q${2*s} ${-9*s} ${-1*s} ${-16*s}`,stroke:'var(--deco2)','stroke-width':2.5*s,fill:'none'}),sv('ellipse',{cx:x-5*s,cy:y-16*s,rx:6*s,ry:2.6*s,fill:'var(--deco)'}),sv('ellipse',{cx:x+4*s,cy:y-17*s,rx:6*s,ry:2.6*s,fill:'var(--deco)'}));
+  if (kind==='flag') return sv('g',{},sv('path',{d:`M${x} ${y} v${-18*s}`,stroke:'var(--ink)','stroke-width':1.5}),sv('path',{d:`M${x} ${y-18*s} l${10*s} ${4*s} l${-10*s} ${4*s}z`,fill:'var(--rust)'}));
+  return sv('g',{},sv('path',{d:`M${x-12*s} ${y} l${5*s} ${-12*s} h${14*s} l${5*s} ${12*s}z`,fill:'var(--deco2)',opacity:.8}),sv('path',{d:`M${x+18*s} ${y} v${-11*s} m0 ${5*s} h${-4*s} v${-4*s} m${4*s} ${4*s}`,stroke:'var(--deco)','stroke-width':2.4*s,fill:'none','stroke-linecap':'round'}));
+}
+function drawWorld(){
+  const m=cur(); const svg=$('#ow'); $('#world').dataset.map=m.id;
+  const P=layout(m); const r=reachedOf(m); const R=rng(m.id.length*7919+m.cps.length);
+  const g=[];
+  g.push(sv('rect',{x:0,y:0,width:W,height:H,fill:'var(--land)'}));
+  for (let i=0;i<7;i++) g.push(sv('ellipse',{cx:R()*W,cy:R()*H,rx:90+R()*160,ry:40+R()*70,fill:'var(--land2)'}));
+  for (let i=0;i<2;i++) g.push(sv('ellipse',{cx:R()*W,cy:R()*H,rx:60+R()*90,ry:22+R()*30,fill:'var(--water)',opacity:.9}));
+  const d=curve(P);
+  /* scatter scenery away from the road */
+  const near=(x,y)=>P.some(p=>Math.hypot(p.x-x,p.y-y)<70);
+  let placed=0,tries=0; const sample=[];
+  if (d){ const tmp=sv('path',{d}); svg.replaceChildren(tmp); const L=tmp.getTotalLength(); for(let s=0;s<=L;s+=25){const q=tmp.getPointAtLength(s); sample.push(q);} }
+  const nearRoad=(x,y)=>sample.some(q=>Math.hypot(q.x-x,q.y-y)<34);
+  while (placed<34&&tries<600){ tries++; const x=20+R()*(W-40), y=30+R()*(H-50); if(near(x,y)||nearRoad(x,y)) continue; g.push(decoShape(m.deco,x,y,0.8+R()*0.6)); placed++; }
+  if (d){
+    g.push(sv('path',{d,fill:'none',stroke:'var(--road)','stroke-width':20,'stroke-linecap':'round','stroke-linejoin':'round'}));
+    g.push(sv('path',{d,fill:'none',stroke:'var(--roadline)','stroke-width':2.5,'stroke-dasharray':'10 12','stroke-linecap':'round'}));
+    if (r!=null&&r>0){ const k=P.findIndex(p=>p.n===r); if(k>0) g.push(sv('path',{d:curve(P.slice(0,k+1)),fill:'none',stroke:'var(--trail)','stroke-width':5,'stroke-linecap':'round','stroke-dasharray':'2 9'})); }
+  }
+  /* stops */
+  for (const p of P){
+    const st=cpState(m,p.n); const sel=S.sel===p.n;
+    const fill=st.k==='go'?'var(--go)':st.k==='amber'?'var(--amber)':'var(--grey)';
+    const txt=st.k==='amber'?'#1d2827':'#ffffff';
+    const R1=24, C=2*Math.PI*R1, frac=st.tot?st.got/st.tot:0;
+    const node=sv('g',{class:'node',tabindex:'0',role:'button','aria-pressed':String(sel),'aria-label':`${cpLabel(p.n)}: ${st.got} of ${st.tot} found`});
+    node.append(sv('title',{},`${cpLabel(p.n)} · ${S.tokens?st.got+' of '+st.tot+' found':st.tot+' collectibles'}`));
+    if (sel) node.append(sv('circle',{cx:p.x,cy:p.y,r:33,fill:'none',stroke:'var(--ink)','stroke-width':3,'stroke-dasharray':'5 4'}));
+    node.append(sv('circle',{cx:p.x,cy:p.y,r:R1,fill:'var(--panel)',stroke:'var(--line)','stroke-width':4}));
+    if (S.tokens&&st.tot) node.append(sv('circle',{cx:p.x,cy:p.y,r:R1,fill:'none',stroke:'var(--go)','stroke-width':4,'stroke-dasharray':`${C*frac} ${C}`,transform:`rotate(-90 ${p.x} ${p.y})`}));
+    const b=sv('g',{class:'badge'});
+    b.append(sv('circle',{cx:p.x,cy:p.y,r:18,fill,stroke:'var(--panel)','stroke-width':2}));
+    b.append(sv('text',{x:p.x,y:p.y+(p.n===0?4:5),'text-anchor':'middle',fill:txt,'font-family':'Bungee, Arial Black, sans-serif','font-size':p.n===0?10:15},p.n===0?(m.cps.length===1?'⛳':'GO'):String(p.n)));
+    node.append(b);
+    const lbl=S.tokens?`${st.got}/${st.tot}`:String(st.tot);
+    const lw=lbl.length*7.5+12;
+    node.append(sv('rect',{x:p.x-lw/2,y:p.y+28,width:lw,height:17,rx:8.5,fill:'var(--panel)',stroke:'var(--line)'}));
+    node.append(sv('text',{x:p.x,y:p.y+40.5,'text-anchor':'middle','font-family':'Space Mono, monospace','font-size':11,fill:'var(--ink)'},lbl));
+    const go=()=>{S.sel=(S.sel===p.n?null:p.n);render();};
+    node.addEventListener('click',go);
+    node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+    g.push(node);
+  }
+  /* the RV, parked at the furthest checkpoint reached */
+  if (r!=null&&m.cps.length>1){
+    const p=P.find(q=>q.n===Math.min(r,P[P.length-1].n))||P[0];
+    const x=p.x+22,y=p.y-46;
+    g.push(sv('g',{class:'rv','aria-hidden':'true'},
+      sv('rect',{x,y,width:40,height:20,rx:4,fill:'var(--rust)',stroke:'var(--ink)','stroke-width':1.5}),
+      sv('rect',{x:x+30,y:y+4,width:10,height:16,rx:2,fill:'var(--rust)',stroke:'var(--ink)','stroke-width':1.5}),
+      sv('rect',{x:x+4,y:y+4,width:9,height:7,rx:1,fill:'#f3e9cf'}),sv('rect',{x:x+16,y:y+4,width:9,height:7,rx:1,fill:'#f3e9cf'}),sv('rect',{x:x+32,y:y+6,width:6,height:6,rx:1,fill:'#f3e9cf'}),
+      sv('rect',{x,y:y+12,width:30,height:2.5,fill:'var(--mustard)'}),
+      sv('circle',{cx:x+9,cy:y+21,r:4,fill:'var(--ink)'}),sv('circle',{cx:x+32,cy:y+21,r:4,fill:'var(--ink)'})));
+  }
+  svg.replaceChildren(...g);
+}
+
+/* ---------- page ---------- */
 function render(){
+  const m=cur();
+  if (S.sel!=null&&!m.cps.some(c=>c.n===S.sel)) S.sel=null;
   const st=$('#status');
-  if (S.tokens){ const all=MAPS.flatMap(m=>m.items); const n=all.filter(has).length; st.className='status ok'; st.textContent=(S.file||'Save')+' loaded: '+n+' of '+all.length+' collectibles found.'; }
+  if (S.tokens){const all=MAPS.flatMap(x=>x.items);const ids=[...new Set(all.map(i=>i.id))];const n=ids.filter(id=>S.tokens.has(id)).length;st.className='status ok';st.textContent=(S.file||'Save')+' loaded: '+n+' of '+ids.length+' collectibles found.';}
 
-  // map tabs
-  const maps=$('#maps'); maps.replaceChildren(...MAPS.map(m=>{
-    const f=m.items.filter(has).length;
-    return el('button',{class:'sign',role:'tab','aria-selected':String(S.map===m.id),type:'button',onclick:()=>{S.map=m.id;savePrefs();render();}},
-      el('span',{class:'n'},m.name), el('span',{class:'pct'}, S.tokens? f+' / '+m.items.length+' found' : m.items.length+' collectibles'));
-  }));
+  $('#maps').replaceChildren(...MAPS.map(x=>{const f=x.items.filter(has).length;return el('button',{class:'sign',role:'tab','aria-selected':String(S.map===x.id),type:'button',onclick:()=>{S.map=x.id;S.sel=null;savePrefs();render();}},el('span',{class:'n'},x.name),el('span',{class:'pct'},S.tokens?f+' / '+x.items.length+' found':x.items.length+' collectibles'));}));
 
-  const m = MAPS.find(x=>x.id===S.map) || MAPS[0];
-  const cos=m.items.filter(i=>i.type!=='tape'), tp=m.items.filter(i=>i.type==='tape');
-  const gauge=(label,got,tot,sub,cls='')=>el('div',{class:'gauge '+cls},
-    el('span',{class:'label'},label),
-    el('div',{class:'v'}, S.tokens&&got!=null? String(got):'–', el('small',{},' / '+tot)),
-    el('div',{class:'bar'},Object.assign(el('i'),{style:'width:'+(S.tokens&&got!=null?pct(got,tot):0)+'%'})),
-    el('span',{class:'sub'},sub));
-  const cfound=cos.filter(has).length, tfound=tp.filter(has).length, cp=cpFor(m);
+  drawWorld();
+
+  const cos=m.items.filter(i=>i.type!=='tape'),tp=m.items.filter(i=>i.type==='tape'),r=reachedOf(m),last=m.cps[m.cps.length-1].n;
+  const gauge=(label,got,tot,sub,cls='')=>el('div',{class:'gauge '+cls},el('span',{class:'label'},label),el('div',{class:'v'},S.tokens&&got!=null?String(got):'–',el('small',{},' / '+tot)),el('div',{class:'bar'},Object.assign(el('i'),{style:'width:'+(S.tokens&&got!=null&&tot?Math.round(got/tot*100):0)+'%'})),el('span',{class:'sub'},sub));
+  const cf=cos.filter(has).length,tf=tp.filter(has).length;
   $('#gauges').replaceChildren(
-    gauge('Cosmetics',cfound,cos.length, S.tokens? (cos.length-cfound)+' still to find' : 'Load a save to count'),
-    tp.length? gauge('Cassette tapes',tfound,tp.length, S.tokens? (tp.length-tfound)+' still to hear' : 'Load a save to count') : gauge('Cassette tapes',0,0,'No tapes on this map'),
-    m.checkpoints? gauge('Checkpoints',cp,m.checkpoints, S.tokens? (cp==null?'Not started yet':cp>=m.checkpoints?'All reached':'Furthest checkpoint reached') : 'Load a save to count','cp') : gauge('Checkpoints',null,0,'This map has no checkpoints','cp')
-  );
+    gauge('Cosmetics',cf,cos.length,S.tokens?(cos.length-cf)+' still to find':'Load a save to count'),
+    tp.length?gauge('Cassette tapes',tf,tp.length,S.tokens?(tp.length-tf)+' still to hear':'Load a save to count'):gauge('Cassette tapes',null,0,'No tapes here'),
+    last>0?gauge('Checkpoints',r,last,S.tokens?(r>=last?'All reached':'Furthest reached'):'Load a save to count','cp'):gauge('Checkpoints',null,0,'No checkpoints here','cp'));
 
-  // chips
+  /* crumb */
+  const inSel=it=>S.sel==null||it.cps.includes(S.sel);
+  const scope=m.items.filter(inSel);
+  $('#allBtn').setAttribute('aria-pressed',String(S.sel==null));
+  $('#crumbT').textContent=S.sel==null?m.name+', all stops':cpLabel(S.sel);
+  $('#crumbC').textContent=S.tokens?scope.filter(has).length+' of '+scope.length+' found':scope.length+' collectibles';
+
   const chip=(group,val,label)=>el('button',{class:'chip',type:'button','aria-pressed':String(S[group]===val),onclick:()=>{S[group]=val;savePrefs();render();}},label);
   $('#typeChips').replaceChildren(chip('type','all','Everything'),chip('type','hat','Hats'),chip('type','glasses','Glasses'),chip('type','tape','Tapes'));
   $('#stateChips').replaceChildren(chip('show','all','All'),chip('show','missing','Missing'),chip('show','found','Found'));
 
-  // items
-  const pass = it => (S.type==='all'||S.type===it.type) && (S.show==='all' || !S.tokens || (S.show==='found')===has(it));
-  const groups=[['Hats','hat'],['Glasses','glasses'],['Cassette tapes','tape']];
+  const pass=it=>inSel(it)&&(S.type==='all'||S.type===it.type)&&(S.show==='all'||!S.tokens||(S.show==='found')===has(it));
   const out=[];
-  for (const [title,type] of groups){
-    const list=m.items.filter(i=>i.type===type&&pass(i));
-    if (!list.length) continue;
-    const all=m.items.filter(i=>i.type===type);
-    out.push(el('div',{class:'section-h'},el('h3',{},title),el('span',{class:'label'},S.tokens? all.filter(has).length+' of '+all.length : all.length+' total')));
+  for (const [title,type] of [['Hats','hat'],['Glasses','glasses'],['Cassette tapes','tape']]){
+    const list=m.items.filter(i=>i.type===type&&pass(i)); if(!list.length) continue;
+    const all=m.items.filter(i=>i.type===type&&inSel(i));
+    out.push(el('div',{class:'section-h'},el('h3',{},title),el('span',{class:'label'},S.tokens?all.filter(has).length+' of '+all.length:all.length+' total')));
     out.push(el('div',{class:'grid'},list.map(card)));
   }
-  if (!out.length) out.push(el('div',{class:'empty'}, S.show==='missing'?'Nothing missing here. You found everything that matches this filter.':'Nothing matches this filter yet.'));
+  if (!out.length) out.push(el('div',{class:'empty'},S.show==='missing'&&S.tokens?'Nothing missing here. Everything at this stop is yours.':'Nothing here matches these filters.'));
   $('#items').replaceChildren(...out);
 
-  // footnote: unknown collectibles in the save
-  const known=new Set(Object.values(ITEMS).flatMap(i=>i.keys));
-  const extra = S.tokens? [...S.tokens].filter(t=>/^(SM_Hat_|SM_Glasses_|MSS_Music_)/.test(t)&&!known.has(t)) : [];
-  const foot=$('#foot'); foot.replaceChildren(
-    'The item list comes from the game’s files (version 1.4), sorted by the map folder each item sits in. A few may be unused or only unlock through the story. ',
-    extra.length? el('span',{},'Your save also has items this page doesn’t know yet: ', el('code',{},extra.join(', ')),'.') : '');
-  if (S.open) fillDrawer();
+  $('#foot').textContent='Positions come from the game’s own map files (version 1.4). Each item is listed under the checkpoint nearest to where it sits; hats and glasses are stocked in several shops, so they can show up at more than one stop. '+(S.map==='mabutts'?'The '+UNPLACED+' are in the game files but aren’t placed anywhere on the maps.':'');
 }
-
 function card(it){
-  const f = S.tokens? has(it) : null;
-  const n=(S.notes[it.id]||[]).length;
-  return el('button',{class:'item '+(f===null?'':f?'is-found':'is-missing'),type:'button',onclick:()=>openDrawer(it.id)},
+  const f=S.tokens?has(it):null; const m=cur();
+  const other=it.type==='tape'?(tapeHome[it.id]||[]).filter(n=>n!==m.name):[];
+  const q=encodeURIComponent('RV There Yet '+m.name+' '+it.name+(it.type==='tape'?' cassette tape':'')+' location');
+  return el('div',{class:'item '+(f===null?'':f?'is-found':'is-missing')},
     icon(it.type),
     el('span',{class:'nm'},it.name),
+    el('a',{class:'yt',href:'https://www.youtube.com/results?search_query='+q,target:'_blank',rel:'noopener'},'Search ↗'),
     el('span',{class:'meta'},
-      el('span',{class:'pill '+(f===null?'unknown':f?'found':'missing')}, f===null?'not checked':f?'found':'missing'),
-      it.type==='tape'? el('span',{},it.kind) : null,
-      n? el('span',{},n+(n===1?' note':' notes')) : null));
+      el('span',{class:'pill '+(f===null?'unknown':f?'found':'missing')},f===null?'not checked':f?'found':'missing'),
+      it.type==='tape'?el('span',{},it.kind):null,
+      it.starter?el('span',{},'Starter outfit'):null,
+      ...it.cps.map(n=>el('button',{class:'cpchip'+(S.sel===n?' on':''),type:'button',title:'Show '+cpLabel(n),onclick:()=>{S.sel=n;render();$('#world').scrollIntoView({behavior:'smooth',block:'nearest'});}},n===0?'GO':'CP'+n)),
+      other.length?el('span',{},'also in '+other.join(', ')):null));
 }
+function step(d){const m=cur();const ns=m.cps.map(c=>c.n);let i=S.sel==null?(d>0?-1:ns.length):ns.indexOf(S.sel);i+=d;S.sel=(i<0||i>=ns.length)?null:ns[i];render();}
+$('#allBtn').onclick=()=>{S.sel=null;render();};
+$('#prev').onclick=()=>step(-1); $('#next').onclick=()=>step(1);
 
-/* ---------- drawer + shared notes ---------- */
-let db=null, assets=null, user=null, me=null, canWrite=null, canEdit=false;
-function openDrawer(id){ S.open=id; $('#drawer').hidden=false; $('#scrim').hidden=false; $('#noteMsg').textContent=''; fillDrawer(); $('#dClose').focus(); }
-function closeDrawer(){ S.open=null; $('#drawer').hidden=true; $('#scrim').hidden=true; }
-$('#dClose').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
-document.addEventListener('keydown',e=>{ if (e.key==='Escape' && S.open) closeDrawer(); });
-
-async function fillDrawer(){
-  const it=ITEMS[S.open]; if (!it) return;
-  const m=MAPS.find(x=>x.id===it.map);
-  $('#dKind').textContent=m.name+' · '+it.kind;
-  $('#dTitle').textContent=it.name;
-  $('#dAsset').textContent=it.id;
-  const f=S.tokens? has(it):null;
-  $('#dState').replaceChildren(el('span',{class:'pill '+(f===null?'unknown':f?'found':'missing')}, f===null?'Load a save to check this':f?'You have this':'You haven’t found this yet'));
-  const q=encodeURIComponent('RV There Yet '+m.name+' '+it.name+(it.type==='tape'?' cassette tape':'')+' location');
-  $('#dLinks').replaceChildren(
-    el('a',{href:'https://www.youtube.com/results?search_query='+q,target:'_blank',rel:'noopener'},'Search YouTube ↗'),
-    el('a',{href:'https://www.google.com/search?q='+q,target:'_blank',rel:'noopener'},'Search Google ↗'),
-    el('a',{href:'https://steamcommunity.com/app/3949040/guides/?searchText='+encodeURIComponent(it.name),target:'_blank',rel:'noopener'},'Steam guides ↗'));
-  const list=S.notes[it.id]||[];
-  const box=$('#dNotes');
-  if (!db){ box.replaceChildren(el('div',{class:'status'},'Shared notes are available when you’re signed in to Claude.')); }
-  else if (!list.length){ box.replaceChildren(el('div',{class:'status'},'No notes yet. If you know where this is, add the first one below.')); }
-  else {
-    let names={}; try{ if (user) names=await user.profiles([...new Set(list.map(n=>n.by).filter(Boolean))]); }catch(e){}
-    box.replaceChildren(...list.map(n=>{
-      const mine = me && n.by===me;
-      return el('div',{class:'note'},
-        n.text? el('p',{},n.text):null,
-        n.image? Object.assign(el('img',{alt:'Screenshot of where '+it.name+' is',loading:'lazy'}),{src:'/_blob/'+n.image,onerror(){this.replaceWith(el('span',{class:'status'},'Screenshot not available to you.'))}}):null,
-        el('div',{class:'by'}, ((names[n.by]&&names[n.by].name)||'A player')+' · '+new Date(n.at).toLocaleDateString(),
-          (mine||canEdit)? el('button',{type:'button',onclick:()=>delNote(n)},'Delete'):null));
-    }));
-  }
-  $('#addForm').hidden = !db || canWrite===false;
-  $('#noteImg').hidden = !assets;
-}
-async function delNote(n){
-  try{ await db.doc('notes/'+n.id).delete(); if (n.image && assets){ try{await assets.delete(n.image)}catch(e){} } }
-  catch(e){ $('#noteMsg').textContent='Couldn’t delete that note.'; }
-}
-$('#addForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const it=ITEMS[S.open]; const text=$('#noteText').value.trim(); const file=$('#noteImg').files[0];
-  const msg=$('#noteMsg'); msg.className='status';
-  if (!text && !file){ msg.textContent='Write a note or attach a screenshot first.'; return; }
-  const btn=$('#noteSave'); btn.disabled=true; msg.textContent='Saving…';
-  try{
-    let image=null;
-    if (file && assets){ image=(await assets.upload(file)).id; }
-    await db.collection('notes').add({item:it.id,map:it.map,text:text.slice(0,1000),image,by:me||null,at:new Date().toISOString()});
-    $('#noteText').value=''; $('#noteImg').value=''; msg.className='status ok'; msg.textContent='Saved. Thanks for helping other players.';
-  }catch(err){
-    msg.className='status err';
-    const c=err&&err.code;
-    msg.textContent = c==='too_large'?'That image is too big (20 MB max).' : c==='unsupported_type'?'Use a PNG, JPG, WebP or GIF screenshot.' : c==='invalid_argument'?'You can read notes here but not add them.' : 'Couldn’t save. Try again in a moment.';
-    if (c==='invalid_argument'){ canWrite=false; $('#addForm').hidden=true; }
-  }finally{ btn.disabled=false; }
-});
-
-/* ---------- file input + copy ---------- */
 const drop=$('#drop');
-$('#file').addEventListener('change',e=>{ const f=e.target.files[0]; if (f) loadFile(f); e.target.value=''; });
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];if(f)loadFile(f);e.target.value='';});
 ['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
 ['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
-drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if (f) loadFile(f); });
-$('#copypath').addEventListener('click',()=>{
-  const t='%LOCALAPPDATA%\\Ride\\Saved\\SaveGames';
-  navigator.clipboard.writeText(t).then(()=>{$('#copymsg').textContent='Copied';},()=>{ const r=document.createRange(); r.selectNodeContents($('#savepath')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $('#copymsg').textContent='Selected. Press Ctrl+C.'; });
-});
-
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)loadFile(f);});
 render();
-
-/* ---------- capabilities (light up when available) ---------- */
-(async()=>{
-  if (!window.claude || !claude.use) return;
-  try{ user=await claude.use('user'); }catch(e){}
-  if (user){ try{ me=await user.id(); canEdit=!!(await user.canEdit()); canWrite=await user.can('data.write'); }catch(e){} }
-  try{ db=await claude.use('db'); }catch(e){}
-  try{ assets=await claude.use('assets'); }catch(e){}
-  if (!db){ if (S.open) fillDrawer(); return; }
-  db.collection('notes').onSnapshot(snap=>{
-    const by={};
-    for (const d of snap.docs){ const v=d.data(); if (!v||!ITEMS[v.item]) continue; (by[v.item]=by[v.item]||[]).push({...v,id:d.id}); }
-    for (const k in by) by[k].sort((a,b)=>String(a.at).localeCompare(String(b.at)));
-    S.notes=by; render();
-  },()=>{ db=null; render(); });
-  if (S.open) fillDrawer();
-})();
 </script>
