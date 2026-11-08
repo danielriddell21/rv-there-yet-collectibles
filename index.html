@@ -140,9 +140,7 @@ button{cursor:pointer}
 .srcb.big{margin-left:8px;vertical-align:middle} .srcb.big svg{width:17px;height:17px}
 .maybe{font-style:italic}
 .seg{cursor:pointer;outline:none}
-.seg:hover .hl{stroke-width:6}
-.seg.on:hover .hl{stroke-width:9}
-.seg:focus-visible .hl{stroke-width:6;stroke:var(--teal)}
+.seg:hover .hl,.seg:focus-visible .hl{stroke-width:8}
 .legend .srcb{font-size:13px}
 
 /* modal */
@@ -440,10 +438,12 @@ function drawWorld(){
     pieces(P).forEach((pc,i)=>{
       const a=P[i].n, k=2*a+1, st=cpState(m,k), sel=S.sel===k;
       const its=m.items.filter(it=>it.ks.includes(k));
+      if (!its.length) return;
+      const col=st.k==='go'?'var(--go)':st.k==='amber'?'var(--amber)':'var(--grey)';
       const seg=sv('g',{class:'seg'+(sel?' on':''),tabindex:'0',role:'button','aria-pressed':String(sel),'aria-label':`${kTitle(k)}: ${S.tokens?st.got+' of '+st.tot+' found':st.tot+' collectibles'}`});
       seg.append(sv('title',{},`${kTitle(k)} · ${S.tokens?st.got+' of '+st.tot+' found':st.tot+' collectibles'}`));
       seg.append(sv('path',{d:pc.d,class:'hit',fill:'none',stroke:'transparent','stroke-width':30,'stroke-linecap':'butt'}));
-      seg.append(sv('path',{d:pc.d,class:'hl',fill:'none',stroke:'var(--mustard)','stroke-width':sel?9:0,'stroke-linecap':'round'}));
+      seg.append(sv('path',{d:pc.d,class:'hl',fill:'none',stroke:col,'stroke-width':sel?8:0,'stroke-linecap':'round'}));
       its.forEach((it,j)=>{ const t=0.22+0.56*(its.length===1?0.5:j/(its.length-1)); const q=pc.at(t); const f=S.tokens?has(it):null;
         seg.append(sv('circle',{cx:q.x,cy:q.y,r:4.2,fill:f===null?'var(--panel)':f?'var(--go)':'var(--amber)',stroke:'var(--ink)','stroke-width':1.2,'pointer-events':'none'})); });
       const go=()=>{S.sel=(S.sel===k?null:k);render();};
