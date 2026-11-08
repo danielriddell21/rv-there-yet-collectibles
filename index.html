@@ -461,7 +461,7 @@ function render(){
       'aria-label':x.name+': '+(S.tokens?got+' of '+tot+' found':tot+' collectibles'),title:x.name+(S.tokens?' · '+got+' of '+tot+' found':''),
       onclick:()=>{S.map=x.id;S.sel=null;savePrefs();render();}},
       el('span',{class:'track'},el('i',{style:'width:'+pct+'%;background:'+LIVERY[x.id]})),
-      el('span',{class:'lab'},S.tokens?short+' '+got+'/'+tot:short));
+      el('span',{class:'lab'},short));
   }));
 
   drawWorld();
