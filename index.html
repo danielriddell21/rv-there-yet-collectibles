@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>RV There Yet? Collectibles</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,7 +94,8 @@ button{cursor:pointer}
 .badge{transition:transform .15s;transform-box:fill-box;transform-origin:center}
 .rv{animation:bob 2.4s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:8px 2px 0}
+.legend{display:flex;gap:6px 24px;flex-wrap:wrap;justify-content:space-between;font-size:13px;color:var(--muted);padding:8px 2px 0}
+.legend .lg{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 
 .side{display:flex;flex-direction:column;gap:10px}
@@ -199,13 +201,12 @@ button{cursor:pointer}
     <div>
       <div class="world" id="world"><svg id="ow" viewBox="0 0 1200 470" role="group" aria-label="Checkpoint map"></svg></div>
       <div class="legend">
-        <span><i style="background:var(--go)"></i>Reached, everything found</span>
-        <span><i style="background:var(--amber)"></i>Reached or started, something missing</span>
+        <span class="lg"><span><i style="background:var(--go)"></i>All found</span>
+        <span><i style="background:var(--amber)"></i>Something missing</span>
         <span><i style="background:var(--grey)"></i>Not reached yet</span>
-        <span>Ring = share found at that stop</span>
-        <span>Click a stretch of road for what's found along it</span>
-        <span class="srcb conf" id="lgConf"></span>
-        <span class="srcb file" id="lgFile"></span>
+        <span>Click a stop or stretch of road to filter</span></span>
+        <span class="lg"><span class="srcb conf" id="lgConf"></span>
+        <span class="srcb file" id="lgFile"></span></span>
       </div>
     </div>
     <aside class="side" id="gauges"></aside>
@@ -679,3 +680,5 @@ $('#file').addEventListener('change',e=>{const f=e.target.files[0];if(f)loadFile
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)loadFile(f);});
 render();
 </script>
+
+</body></html>
