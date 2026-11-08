@@ -444,8 +444,6 @@ function drawWorld(){
       seg.append(sv('title',{},`${kTitle(k)} · ${S.tokens?st.got+' of '+st.tot+' found':st.tot+' collectibles'}`));
       seg.append(sv('path',{d:pc.d,class:'hit',fill:'none',stroke:'transparent','stroke-width':30,'stroke-linecap':'butt'}));
       seg.append(sv('path',{d:pc.d,class:'hl',fill:'none',stroke:col,'stroke-width':sel?8:0,'stroke-linecap':'round'}));
-      its.forEach((it,j)=>{ const t=0.22+0.56*(its.length===1?0.5:j/(its.length-1)); const q=pc.at(t); const f=S.tokens?has(it):null;
-        seg.append(sv('circle',{cx:q.x,cy:q.y,r:4.2,fill:f===null?'var(--panel)':f?'var(--go)':'var(--amber)',stroke:'var(--ink)','stroke-width':1.2,'pointer-events':'none'})); });
       const go=()=>{S.sel=(S.sel===k?null:k);render();};
       seg.addEventListener('click',go);
       seg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
